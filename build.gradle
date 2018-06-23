@@ -1,0 +1,23 @@
+group 'es.jklabs.desktop'
+version '0.0.1'
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8
+
+mainClassName = "es.jklabs.BeyondDeploy"
+
+applicationDistribution.from("README.md") {
+    into ""
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.6'
+    compile group: 'com.google.firebase', name: 'firebase-admin', version: '6.2.0'
+}
