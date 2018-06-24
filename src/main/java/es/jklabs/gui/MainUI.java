@@ -1,17 +1,21 @@
 package es.jklabs.gui;
 
+import com.amazonaws.services.s3.model.ObjectListing;
 import es.jklabs.gui.configuracion.ConfiguracionUI;
 import es.jklabs.gui.dialogos.AcercaDe;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.Configuracion;
+import es.jklabs.s3.model.S3Object;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.UtilidadesFirebase;
+import es.jklabs.utilidades.UtilidadesS3;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -37,6 +41,7 @@ public class MainUI extends JFrame {
         super.setLayout(new BorderLayout(10, 10));
         JPanel panelCentral = new JPanel(new GridLayout(1, 2, 10, 10));
         panelCentral.setBorder(new EmptyBorder(10, 0, 0, 0));
+        ObjectListing elementos = UtilidadesS3.getRaiz();
         super.add(panelCentral, BorderLayout.CENTER);
     }
 
