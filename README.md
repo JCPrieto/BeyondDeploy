@@ -19,6 +19,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 * Iconos: Papirus https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
 * Librerias:
     * Jackson https://github.com/FasterXML/jackson-core/wiki
+    * Firebase https://firebase.google.com
     
 ### ToDo ###
 

@@ -54,4 +54,8 @@ public class Logger {
             LOG.log(Level.INFO, mensaje, e);
         }
     }
+
+    void info(String mensaje) {
+        LOG.log(Level.INFO, mensaje);
+    }
 }
