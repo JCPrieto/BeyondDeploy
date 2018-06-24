@@ -97,8 +97,10 @@ public class AcercaDe extends JDialog {
         cns.gridy = 4;
         panel.add(jLabelPoweredBy, cns);
         addPowered(panel, cns, 5, "Papirus", "https://github.com/PapirusDevelopmentTeam/papirus-icon-theme");
-        addPowered(panel, cns, 7, "Jackson", "https://github.com/FasterXML/jackson-core/wiki");
-        addPowered(panel, cns, 10, "Firebase", "https://firebase.google.com");
+        addPowered(panel, cns, 6, "Jackson", "https://github.com/FasterXML/jackson-core/wiki");
+        addPowered(panel, cns, 7, "Firebase", "https://firebase.google.com");
+        addPowered(panel, cns, 8, "AWS Amazon S3", "https://aws.amazon.com/sdkforjava");
+        addPowered(panel, cns, 9, "Apache Commons Lang", "http://commons.apache.org/proper/commons-lang");
         JLabel jLabelLicense = new JLabel
                 ("<html><i>Esta obra está bajo una licencia de Creative Commons " +
                         "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>", new ImageIcon(Objects

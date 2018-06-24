@@ -16,7 +16,7 @@ public class BeyondDeploy {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             Configuracion configuracion = UtilidadesConfiguracion.loadConfig();
-            /*if (configuracion == null) {
+            if (configuracion == null) {
                 configuracion = new Configuracion();
                 MainUI mainUI = new MainUI(configuracion);
                 ConfiguracionUI configuracionUI = new ConfiguracionUI(mainUI, configuracion);
@@ -25,9 +25,7 @@ public class BeyondDeploy {
             } else {
                 MainUI mainUI = new MainUI(configuracion);
                 mainUI.setVisible(true);
-            }*/
-            MainUI mainUI = new MainUI(configuracion);
-            mainUI.setVisible(true);
+            }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
                 UnsupportedLookAndFeelException e) {
             LOG.error("Cargar el LookAndFeel del S.O", e);

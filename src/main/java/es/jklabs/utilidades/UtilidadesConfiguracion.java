@@ -1,6 +1,7 @@
 package es.jklabs.utilidades;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import es.jklabs.json.configuracion.Configuracion;
 
 import java.io.File;
@@ -41,5 +42,17 @@ public class UtilidadesConfiguracion {
             LOG.error("Error de lectura del fichero de configuracion", e);
         }
         return configuracion;
+    }
+
+    public static void guardarConfiguracion(Configuracion configuracion) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        try {
+            UtilidadesFichero.createBaseFolder();
+            mapper.writeValue(new File(UtilidadesFichero.HOME + UtilidadesFichero.SEPARADOR +
+                    UtilidadesFichero.BEYOND_DEPLOY_FOLDER + UtilidadesFichero.SEPARADOR + CONFIG_JSON), configuracion);
+        } catch (IOException e) {
+            LOG.error("Guardar configuracion", e);
+        }
     }
 }

@@ -6,7 +6,11 @@ public class Configuracion implements Serializable {
 
     private static final long serialVersionUID = 3896665957540369678L;
 
-    BucketConfig bucketConfig;
+    private BucketConfig bucketConfig;
+
+    public Configuracion() {
+        bucketConfig = new BucketConfig();
+    }
 
     public BucketConfig getBucketConfig() {
         return bucketConfig;

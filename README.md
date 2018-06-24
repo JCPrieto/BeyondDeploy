@@ -20,10 +20,14 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 * Librerias:
     * Jackson https://github.com/FasterXML/jackson-core/wiki
     * Firebase https://firebase.google.com
+    * AWS Amazon S3 https://aws.amazon.com/sdkforjava
+    * Apache Commons Lang http://commons.apache.org/proper/commons-lang
     
 ### ToDo ###
 
-* Todo
+* Importar y exportar la configuracion.
+* Mostrar en pantalla las carpetas y archivos del bucket
+* Subir archivos a una carpeta
 
 ### Changelog ###
 

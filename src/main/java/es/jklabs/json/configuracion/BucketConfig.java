@@ -5,31 +5,31 @@ import java.io.Serializable;
 public class BucketConfig implements Serializable {
 
     private static final long serialVersionUID = -6696529132684442401L;
-    private String nombre;
-    private String usuario;
-    private String password;
+    private String bucketName;
+    private String accesKey;
+    private String secretKey;
 
-    public String getNombre() {
-        return nombre;
+    public String getBucketName() {
+        return bucketName;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
     }
 
-    public String getUsuario() {
-        return usuario;
+    public String getAccesKey() {
+        return accesKey;
     }
 
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
+    public void setAccesKey(String accesKey) {
+        this.accesKey = accesKey;
     }
 
-    public String getPassword() {
-        return password;
+    public String getSecretKey() {
+        return secretKey;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 }

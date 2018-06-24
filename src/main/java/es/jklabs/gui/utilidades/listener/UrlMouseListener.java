@@ -44,7 +44,7 @@ public class UrlMouseListener implements MouseListener {
 
     @Override
     public void mouseEntered(MouseEvent e) {
-
+        etiqueta.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     @Override
