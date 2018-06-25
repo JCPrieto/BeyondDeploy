@@ -31,28 +31,36 @@ public class UtilidadesConfiguracion {
                 LOG.error("Mover archivo de configuracion", e);
             }
         }
+        return loadConfig(new File(UtilidadesFichero.HOME + UtilidadesFichero.SEPARADOR +
+                UtilidadesFichero.BEYOND_DEPLOY_FOLDER + UtilidadesFichero.SEPARADOR + CONFIG_JSON));
+    }
+
+    public static void guardarConfiguracion(Configuracion configuracion) {
+        guardarConfiguracion(configuracion, new File(UtilidadesFichero.HOME + UtilidadesFichero.SEPARADOR +
+                UtilidadesFichero.BEYOND_DEPLOY_FOLDER + UtilidadesFichero.SEPARADOR + CONFIG_JSON));
+    }
+
+    public static void guardarConfiguracion(Configuracion configuracion, File file) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        try {
+            UtilidadesFichero.createBaseFolder();
+            mapper.writeValue(file, configuracion);
+        } catch (IOException e) {
+            LOG.error("Guardar configuracion", e);
+        }
+    }
+
+    public static Configuracion loadConfig(File file) {
         ObjectMapper mapper = new ObjectMapper();
         Configuracion configuracion = null;
         try {
-            configuracion = mapper.readValue(new File(UtilidadesFichero.HOME + UtilidadesFichero.SEPARADOR +
-                    UtilidadesFichero.BEYOND_DEPLOY_FOLDER + UtilidadesFichero.SEPARADOR + CONFIG_JSON), Configuracion.class);
+            configuracion = mapper.readValue(file, Configuracion.class);
         } catch (FileNotFoundException e) {
             LOG.info("Fichero de configuracion no encontrado", e);
         } catch (IOException e) {
             LOG.error("Error de lectura del fichero de configuracion", e);
         }
         return configuracion;
-    }
-
-    public static void guardarConfiguracion(Configuracion configuracion) {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        try {
-            UtilidadesFichero.createBaseFolder();
-            mapper.writeValue(new File(UtilidadesFichero.HOME + UtilidadesFichero.SEPARADOR +
-                    UtilidadesFichero.BEYOND_DEPLOY_FOLDER + UtilidadesFichero.SEPARADOR + CONFIG_JSON), configuracion);
-        } catch (IOException e) {
-            LOG.error("Guardar configuracion", e);
-        }
     }
 }

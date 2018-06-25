@@ -22,4 +22,5 @@ dependencies {
     compile group: 'com.google.firebase', name: 'firebase-admin', version: '6.2.0'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.354'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
 }

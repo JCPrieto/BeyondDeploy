@@ -101,6 +101,7 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, 7, "Firebase", "https://firebase.google.com");
         addPowered(panel, cns, 8, "AWS Amazon S3", "https://aws.amazon.com/sdkforjava");
         addPowered(panel, cns, 9, "Apache Commons Lang", "http://commons.apache.org/proper/commons-lang");
+        addPowered(panel, cns, 10, "Apache Commons IO", "http://commons.apache.org/proper/commons-io");
         JLabel jLabelLicense = new JLabel
                 ("<html><i>Esta obra está bajo una licencia de Creative Commons " +
                         "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>", new ImageIcon(Objects

@@ -22,10 +22,10 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     * Firebase https://firebase.google.com
     * AWS Amazon S3 https://aws.amazon.com/sdkforjava
     * Apache Commons Lang http://commons.apache.org/proper/commons-lang
+    * Apache Commons IO http://commons.apache.org/proper/commons-io
     
 ### ToDo ###
 
-* Importar y exportar la configuracion.
 * Mostrar en pantalla las carpetas y archivos del bucket
 * Subir archivos a una carpeta
 

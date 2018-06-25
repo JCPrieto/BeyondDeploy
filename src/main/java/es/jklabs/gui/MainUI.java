@@ -4,18 +4,16 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import es.jklabs.gui.configuracion.ConfiguracionUI;
 import es.jklabs.gui.dialogos.AcercaDe;
 import es.jklabs.gui.utilidades.Growls;
+import es.jklabs.gui.utilidades.filter.JSonFilter;
 import es.jklabs.json.configuracion.Configuracion;
-import es.jklabs.s3.model.S3Object;
-import es.jklabs.utilidades.Constantes;
-import es.jklabs.utilidades.Logger;
-import es.jklabs.utilidades.UtilidadesFirebase;
-import es.jklabs.utilidades.UtilidadesS3;
+import es.jklabs.utilidades.*;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -41,7 +39,7 @@ public class MainUI extends JFrame {
         super.setLayout(new BorderLayout(10, 10));
         JPanel panelCentral = new JPanel(new GridLayout(1, 2, 10, 10));
         panelCentral.setBorder(new EmptyBorder(10, 0, 0, 0));
-        ObjectListing elementos = UtilidadesS3.getRaiz();
+        ObjectListing elementos = UtilidadesS3.getRaiz(configuracion.getBucketConfig());
         super.add(panelCentral, BorderLayout.CENTER);
     }
 
@@ -124,11 +122,29 @@ public class MainUI extends JFrame {
     }
 
     private void importarConfiguracion() {
-
+        JFileChooser fc = new JFileChooser();
+        fc.addChoosableFileFilter(new JSonFilter());
+        fc.setAcceptAllFileFilterUsed(false);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int retorno = fc.showOpenDialog(this);
+        if (retorno == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            configuracion = UtilidadesConfiguracion.loadConfig(file);
+        }
     }
 
     private void exportarConfiguracion() {
-
+        JFileChooser fc = new JFileChooser();
+        fc.addChoosableFileFilter(new JSonFilter());
+        fc.setAcceptAllFileFilterUsed(false);
+        int retorno = fc.showSaveDialog(this);
+        if (retorno == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            if (!Objects.equals(FilenameUtils.getExtension(file.getName()), "json")) {
+                file = new File(file.toString() + ".json");
+            }
+            UtilidadesConfiguracion.guardarConfiguracion(configuracion, file);
+        }
     }
 
     private void abrirConfiguracion() {
