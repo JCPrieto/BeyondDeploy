@@ -8,8 +8,8 @@ import es.jklabs.gui.navegacion.Explorador;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.filter.JSonFilter;
 import es.jklabs.json.configuracion.Configuracion;
+import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
-import es.jklabs.s3.model.S3Object;
 import es.jklabs.utilidades.*;
 import org.apache.commons.io.FilenameUtils;
 
@@ -57,7 +57,7 @@ public class MainUI extends JFrame {
                     String carpeta = ruta[i];
                     actual = addCarpetas(actual, carpeta);
                 }
-                actual.getS3Objects().add(new S3Object(ruta[ruta.length - 1], s3ObjectSummary));
+                actual.getS3Files().add(new S3File(ruta[ruta.length - 1], s3ObjectSummary));
             }
         }
         panelCentral = new Explorador(this, raiz);
@@ -204,5 +204,13 @@ public class MainUI extends JFrame {
 
     public void setPanelCentral(Explorador panelCentral) {
         this.panelCentral = panelCentral;
+    }
+
+    public Configuracion getConfiguracion() {
+        return configuracion;
+    }
+
+    public void setConfiguracion(Configuracion configuracion) {
+        this.configuracion = configuracion;
     }
 }

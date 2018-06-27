@@ -1,10 +1,10 @@
 package es.jklabs.gui.navegacion;
 
 import es.jklabs.gui.MainUI;
+import es.jklabs.gui.utilidades.listener.S3FileListener;
 import es.jklabs.gui.utilidades.listener.S3FolderListener;
-import es.jklabs.gui.utilidades.listener.S3ObjectListener;
+import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
-import es.jklabs.s3.model.S3Object;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -32,19 +32,19 @@ public class Explorador extends JPanel {
         jpMenu.setLayout(new GridLayout(0, 5, 10, 10));
         jpMenu.setBorder(new EmptyBorder(10, 10, 10, 10));
         folder.getS3Forlders().forEach(this::addCarpeta);
-        folder.getS3Objects().forEach(this::addObjeto);
+        folder.getS3Files().forEach(this::addObjeto);
         JScrollPane jScrollPane = new JScrollPane(jpMenu);
         jScrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
         add(jScrollPane, BorderLayout.CENTER);
     }
 
-    private void addObjeto(S3Object s3Object) {
-        JLabel jLabel = new JLabel(s3Object.getName());
+    private void addObjeto(S3File s3File) {
+        JLabel jLabel = new JLabel(s3File.getName());
         jLabel.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
                 ("img/icons/file.png"))));
         jLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
         jLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-        jLabel.addMouseListener(new S3ObjectListener(padre, this, jLabel, s3Object));
+        jLabel.addMouseListener(new S3FileListener(padre, this, jLabel, s3File));
         jpMenu.add(jLabel);
     }
 

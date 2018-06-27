@@ -9,11 +9,11 @@ public class S3Folder implements Serializable {
     private static final long serialVersionUID = -4932960673157161234L;
     private List<S3Folder> s3Forlders;
     private String name;
-    private List<S3Object> s3Objects;
+    private List<S3File> s3Files;
 
     public S3Folder() {
         this.s3Forlders = new ArrayList<>();
-        this.s3Objects = new ArrayList<>();
+        this.s3Files = new ArrayList<>();
     }
 
     public S3Folder(String name) {
@@ -37,12 +37,12 @@ public class S3Folder implements Serializable {
         this.name = name;
     }
 
-    public List<S3Object> getS3Objects() {
-        return s3Objects;
+    public List<S3File> getS3Files() {
+        return s3Files;
     }
 
-    public void setS3Objects(List<S3Object> s3Objects) {
-        this.s3Objects = s3Objects;
+    public void setS3Files(List<S3File> s3Files) {
+        this.s3Files = s3Files;
     }
 
 }

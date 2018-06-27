@@ -4,12 +4,12 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import java.io.Serializable;
 
-public class S3Object implements Serializable {
+public class S3File implements Serializable {
 
     private final S3ObjectSummary s3ObjectSummary;
     private String name;
 
-    public S3Object(String name, S3ObjectSummary s3ObjectSummary) {
+    public S3File(String name, S3ObjectSummary s3ObjectSummary) {
         this.name = name;
         this.s3ObjectSummary = s3ObjectSummary;
     }

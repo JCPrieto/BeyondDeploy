@@ -2,29 +2,31 @@ package es.jklabs.gui.utilidades.listener;
 
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.navegacion.Explorador;
-import es.jklabs.s3.model.S3Object;
+import es.jklabs.s3.model.S3File;
+import es.jklabs.utilidades.UtilidadesS3;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-public class S3ObjectListener implements MouseListener {
+public class S3FileListener implements MouseListener {
 
     private final MainUI padre;
     private final JLabel jLabel;
-    private final S3Object s3Object;
+    private final S3File s3File;
     private final Explorador explorador;
 
-    public S3ObjectListener(MainUI padre, Explorador explorador, JLabel jLabel, S3Object s3Object) {
+    public S3FileListener(MainUI padre, Explorador explorador, JLabel jLabel, S3File s3File) {
         this.padre = padre;
         this.explorador = explorador;
         this.jLabel = jLabel;
-        this.s3Object = s3Object;
+        this.s3File = s3File;
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        UtilidadesS3.getObject(padre, padre.getConfiguracion().getBucketConfig(), s3File);
         //ToDo Descargar archivo
     }
 
