@@ -1,16 +1,19 @@
 package es.jklabs.gui;
 
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import es.jklabs.gui.configuracion.ConfiguracionUI;
 import es.jklabs.gui.dialogos.AcercaDe;
+import es.jklabs.gui.navegacion.Explorador;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.filter.JSonFilter;
 import es.jklabs.json.configuracion.Configuracion;
+import es.jklabs.s3.model.S3Folder;
+import es.jklabs.s3.model.S3Object;
 import es.jklabs.utilidades.*;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +30,7 @@ public class MainUI extends JFrame {
     private JMenu jmArchivo;
     private JMenu jmAyuda;
     private TrayIcon trayIcon;
+    private JPanel panelCentral;
 
     public MainUI(Configuracion configuracion) {
         this();
@@ -37,10 +41,44 @@ public class MainUI extends JFrame {
 
     private void cargarPantallaPrincipal() {
         super.setLayout(new BorderLayout(10, 10));
-        JPanel panelCentral = new JPanel(new GridLayout(1, 2, 10, 10));
-        panelCentral.setBorder(new EmptyBorder(10, 0, 0, 0));
         ObjectListing elementos = UtilidadesS3.getRaiz(configuracion.getBucketConfig());
+        S3Folder raiz = new S3Folder();
+        for (S3ObjectSummary s3ObjectSummary : elementos.getObjectSummaries()) {
+            if (s3ObjectSummary.getKey().endsWith("/")) {
+                String[] ruta = s3ObjectSummary.getKey().split("/");
+                S3Folder actual = raiz;
+                for (String carpeta : ruta) {
+                    actual = addCarpetas(actual, carpeta);
+                }
+            } else {
+                String[] ruta = s3ObjectSummary.getKey().split("/");
+                S3Folder actual = raiz;
+                for (int i = 0; i < ruta.length - 1; i++) {
+                    String carpeta = ruta[i];
+                    actual = addCarpetas(actual, carpeta);
+                }
+                actual.getS3Objects().add(new S3Object(ruta[ruta.length - 1], s3ObjectSummary));
+            }
+        }
+        panelCentral = new Explorador(this, raiz);
         super.add(panelCentral, BorderLayout.CENTER);
+    }
+
+    private S3Folder addCarpetas(S3Folder actual, String carpeta) {
+        boolean existeCarpeta = false;
+        for (S3Folder s3Folder : actual.getS3Forlders()) {
+            if (Objects.equals(s3Folder.getName(), carpeta)) {
+                existeCarpeta = true;
+                actual = s3Folder;
+                break;
+            }
+        }
+        if (!existeCarpeta) {
+            S3Folder nueva = new S3Folder(carpeta);
+            actual.getS3Forlders().add(nueva);
+            actual = nueva;
+        }
+        return actual;
     }
 
     private MainUI() {
@@ -158,5 +196,13 @@ public class MainUI extends JFrame {
 
     public void setTrayIcon(TrayIcon trayIcon) {
         this.trayIcon = trayIcon;
+    }
+
+    public JPanel getPanelCentral() {
+        return panelCentral;
+    }
+
+    public void setPanelCentral(Explorador panelCentral) {
+        this.panelCentral = panelCentral;
     }
 }
