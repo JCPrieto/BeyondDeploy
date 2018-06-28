@@ -40,4 +40,8 @@ public class Growls {
     public static void mostrarInfo(MainUI parent, String cuerpo) {
         mostrarInfo(parent, null, cuerpo);
     }
+
+    public static void mostrarAviso(MainUI parent, String cuerpo) {
+        mostrarAviso(parent, null, cuerpo);
+    }
 }

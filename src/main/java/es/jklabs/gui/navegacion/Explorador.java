@@ -9,8 +9,6 @@ import es.jklabs.s3.model.S3Folder;
 import es.jklabs.utilidades.UtilidadesS3;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.io.File;
 import java.util.Locale;
@@ -30,8 +28,7 @@ public class Explorador extends JPanel {
         super();
         this.padre = padre;
         this.folder = folder;
-        setLayout(new BorderLayout(10, 10));
-        setBorder(new TitledBorder(folder.getName()));
+        setLayout(new BorderLayout());
         cargarElementos();
     }
 
@@ -57,6 +54,8 @@ public class Explorador extends JPanel {
             jbAtras.setIcon(new ImageIcon(img));
             jbAtras.addActionListener(l -> retroceder());
             botonera.add(jbAtras, BorderLayout.WEST);
+            JLabel jlNombreCarpera = new JLabel(folder.getName(), SwingConstants.CENTER);
+            botonera.add(jlNombreCarpera, BorderLayout.CENTER);
         }
         JButton jbUpload = new JButton(mensajes.getString("subir.archivo"));
         jbUpload.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
@@ -72,17 +71,19 @@ public class Explorador extends JPanel {
         int retorno = fc.showOpenDialog(this);
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
-            this.setEnabled(false);
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            padre.bloquearPantalla();
             if (UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion().getBucketConfig())) {
                 S3File nuevo = new S3File(file.getName(), folder.getFullpath() + file.getName());
-                folder.getS3Files().add(nuevo);
-                this.setEnabled(true);
-                this.setCursor(null);
-                addObjeto(nuevo);
-                SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
+                if (!folder.getS3Files().contains(nuevo)) {
+                    folder.getS3Files().add(nuevo);
+                    addObjeto(nuevo);
+                    SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
+                }
                 Growls.mostrarInfo(padre, "subida.realizada");
+            } else {
+                Growls.mostrarAviso(padre, "subida.al.bucket");
             }
+            padre.desbloquearPantalla();
         }
     }
 
@@ -94,14 +95,10 @@ public class Explorador extends JPanel {
     }
 
     private void cargarPanelCentral() {
-        jpMenu = new JPanel();
-        jpMenu.setLayout(new GridLayout(0, 5, 10, 10));
-        jpMenu.setBorder(new EmptyBorder(10, 10, 10, 10));
+        jpMenu = new JPanel(new FlowLayout(FlowLayout.LEFT));
         folder.getS3Forlders().forEach(this::addCarpeta);
         folder.getS3Files().forEach(this::addObjeto);
-        JScrollPane jScrollPane = new JScrollPane(jpMenu);
-        jScrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-        add(jScrollPane, BorderLayout.CENTER);
+        add(jpMenu, BorderLayout.CENTER);
     }
 
     private void addObjeto(S3File s3File) {

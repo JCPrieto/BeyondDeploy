@@ -38,10 +38,14 @@ public class MainUI extends JFrame {
         super.pack();
     }
 
-    private void cargarPantallaPrincipal() {
-        super.setLayout(new BorderLayout(10, 10));
-        cargarPanelCentral();
-        super.add(panelCentral, BorderLayout.CENTER);
+    private MainUI() {
+        super(Constantes.NOMBRE_APP);
+        super.setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
+                ("img/icons/s3-bucket.png"))).getImage());
+        super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new Dimension(500, 500));
+        cargarMenu();
+        cargarNotificaciones();
     }
 
     private void cargarPanelCentral() {
@@ -84,14 +88,10 @@ public class MainUI extends JFrame {
         return actual;
     }
 
-    private MainUI() {
-        super(Constantes.NOMBRE_APP);
-        super.setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/s3-bucket.png"))).getImage());
-        super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        cargarMenu();
-        cargarNotificaciones();
-        super.pack();
+    private void cargarPantallaPrincipal() {
+        super.setLayout(new BorderLayout());
+        cargarPanelCentral();
+        super.add(panelCentral, BorderLayout.CENTER);
     }
 
     private void cargarNotificaciones() {
@@ -213,4 +213,13 @@ public class MainUI extends JFrame {
         return raiz;
     }
 
+    public void bloquearPantalla() {
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        this.setEnabled(false);
+    }
+
+    public void desbloquearPantalla() {
+        this.setEnabled(true);
+        this.setCursor(null);
+    }
 }

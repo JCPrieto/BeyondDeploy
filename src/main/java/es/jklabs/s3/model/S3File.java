@@ -1,6 +1,7 @@
 package es.jklabs.s3.model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class S3File implements Serializable {
 
@@ -19,5 +20,19 @@ public class S3File implements Serializable {
 
     public String getFullPath() {
         return fullPath;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof S3File)) return false;
+        S3File s3File = (S3File) o;
+        return Objects.equals(getFullPath(), s3File.getFullPath());
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(getFullPath());
     }
 }
