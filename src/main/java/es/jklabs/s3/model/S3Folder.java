@@ -7,6 +7,7 @@ import java.util.List;
 public class S3Folder implements Serializable {
 
     private static final long serialVersionUID = -4932960673157161234L;
+    private String fullpath;
     private List<S3Folder> s3Forlders;
     private String name;
     private List<S3File> s3Files;
@@ -14,35 +15,29 @@ public class S3Folder implements Serializable {
     public S3Folder() {
         this.s3Forlders = new ArrayList<>();
         this.s3Files = new ArrayList<>();
+        this.fullpath = "";
     }
 
-    public S3Folder(String name) {
+    public S3Folder(String name, String fullpath) {
         this();
         this.name = name;
+        this.fullpath = fullpath;
     }
 
     public List<S3Folder> getS3Forlders() {
         return s3Forlders;
     }
 
-    public void setS3Forlders(List<S3Folder> s3Forlders) {
-        this.s3Forlders = s3Forlders;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public List<S3File> getS3Files() {
         return s3Files;
     }
 
-    public void setS3Files(List<S3File> s3Files) {
-        this.s3Files = s3Files;
+    public String getFullpath() {
+        return fullpath;
     }
 
 }

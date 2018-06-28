@@ -36,4 +36,8 @@ public class Growls {
         parent.getTrayIcon().displayMessage(titulo != null ? mensajes.getString(titulo) : null, errores.getString
                 (cuerpo), TrayIcon.MessageType.WARNING);
     }
+
+    public static void mostrarInfo(MainUI parent, String cuerpo) {
+        mostrarInfo(parent, null, cuerpo);
+    }
 }

@@ -7,6 +7,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
@@ -15,6 +16,7 @@ import es.jklabs.s3.model.S3File;
 
 import javax.swing.*;
 import java.io.*;
+import java.util.Objects;
 
 public class UtilidadesS3 {
 
@@ -29,7 +31,7 @@ public class UtilidadesS3 {
 
     private static AmazonS3 getAmazonS3(BucketConfig bucketConfig) {
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(bucketConfig.getAccesKey(),
-                UtilidadesEncryptacion.decrypt(bucketConfig.getSecretKey()));
+                Objects.requireNonNull(UtilidadesEncryptacion.decrypt(bucketConfig.getSecretKey())));
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .withRegion(Regions.EU_WEST_3)
@@ -43,7 +45,7 @@ public class UtilidadesS3 {
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File directorio = fc.getSelectedFile();
             AmazonS3 s3 = getAmazonS3(bucketConfig);
-            S3Object s3Object = s3.getObject(bucketConfig.getBucketName(), file.getS3ObjectSummary().getKey());
+            S3Object s3Object = s3.getObject(bucketConfig.getBucketName(), file.getFullPath());
             InputStream in = s3Object.getObjectContent();
             byte[] buf = new byte[1024];
             try (OutputStream out = new FileOutputStream(new File(directorio.getAbsolutePath() +
@@ -56,10 +58,17 @@ public class UtilidadesS3 {
                     out.write(buf, 0, count);
                 }
                 in.close();
-                Growls.mostrarInfo(ventana, null, "archivo.descargado.correctamente");
+                Growls.mostrarInfo(ventana, "archivo.descargado.correctamente");
             } catch (InterruptedException | IOException e) {
-                Growls.mostrarError(ventana, null, "descargar.archivo", e);
+                Growls.mostrarError(ventana, "descargar.archivo", e);
             }
         }
+    }
+
+    public static boolean uploadFile(File file, String fullpath, BucketConfig bucketConfig) {
+        AmazonS3 s3 = getAmazonS3(bucketConfig);
+        PutObjectRequest request = new PutObjectRequest(bucketConfig.getBucketName(), fullpath + file.getName(), file);
+        s3.putObject(request);
+        return true;
     }
 }

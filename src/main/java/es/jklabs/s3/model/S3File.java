@@ -1,28 +1,23 @@
 package es.jklabs.s3.model;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-
 import java.io.Serializable;
 
 public class S3File implements Serializable {
 
-    private final S3ObjectSummary s3ObjectSummary;
+    private static final long serialVersionUID = -3045077411639166434L;
+    private final String fullPath;
     private String name;
 
-    public S3File(String name, S3ObjectSummary s3ObjectSummary) {
+    public S3File(String name, String fullPath) {
         this.name = name;
-        this.s3ObjectSummary = s3ObjectSummary;
+        this.fullPath = fullPath;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public S3ObjectSummary getS3ObjectSummary() {
-        return s3ObjectSummary;
+    public String getFullPath() {
+        return fullPath;
     }
 }

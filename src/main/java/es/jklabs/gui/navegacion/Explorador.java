@@ -1,15 +1,18 @@
 package es.jklabs.gui.navegacion;
 
 import es.jklabs.gui.MainUI;
+import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.listener.S3FileListener;
 import es.jklabs.gui.utilidades.listener.S3FolderListener;
 import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
+import es.jklabs.utilidades.UtilidadesS3;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.io.File;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -55,7 +58,32 @@ public class Explorador extends JPanel {
             jbAtras.addActionListener(l -> retroceder());
             botonera.add(jbAtras, BorderLayout.WEST);
         }
+        JButton jbUpload = new JButton(mensajes.getString("subir.archivo"));
+        jbUpload.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
+                ("img/icons/upload.png"))));
+        jbUpload.addActionListener(l -> uploadFile());
+        botonera.add(jbUpload, BorderLayout.EAST);
         add(botonera, BorderLayout.NORTH);
+    }
+
+    private void uploadFile() {
+        JFileChooser fc = new JFileChooser();
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int retorno = fc.showOpenDialog(this);
+        if (retorno == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            this.setEnabled(false);
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            if (UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion().getBucketConfig())) {
+                S3File nuevo = new S3File(file.getName(), folder.getFullpath() + file.getName());
+                folder.getS3Files().add(nuevo);
+                this.setEnabled(true);
+                this.setCursor(null);
+                addObjeto(nuevo);
+                SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
+                Growls.mostrarInfo(padre, "subida.realizada");
+            }
+        }
     }
 
     private void retroceder() {
@@ -96,19 +124,4 @@ public class Explorador extends JPanel {
         jpMenu.add(jLabel);
     }
 
-    public S3Folder getFolder() {
-        return folder;
-    }
-
-    public void setFolder(S3Folder folder) {
-        this.folder = folder;
-    }
-
-    public Explorador getAnterior() {
-        return anterior;
-    }
-
-    public void setAnterior(Explorador anterior) {
-        this.anterior = anterior;
-    }
 }

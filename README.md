@@ -26,8 +26,8 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     
 ### ToDo ###
 
-* Mostrar en pantalla las carpetas y archivos del bucket
-* Subir archivos a una carpeta
+* Sincronizacion continua de la carpeta
+* Eliminar archivos del bucket
 
 ### Changelog ###
 

@@ -52,22 +52,22 @@ public class MainUI extends JFrame {
                 String[] ruta = s3ObjectSummary.getKey().split("/");
                 S3Folder actual = raiz;
                 for (String carpeta : ruta) {
-                    actual = addCarpetas(actual, carpeta);
+                    actual = addCarpetas(actual, carpeta, s3ObjectSummary.getKey());
                 }
             } else {
                 String[] ruta = s3ObjectSummary.getKey().split("/");
                 S3Folder actual = raiz;
                 for (int i = 0; i < ruta.length - 1; i++) {
                     String carpeta = ruta[i];
-                    actual = addCarpetas(actual, carpeta);
+                    actual = addCarpetas(actual, carpeta, s3ObjectSummary.getKey());
                 }
-                actual.getS3Files().add(new S3File(ruta[ruta.length - 1], s3ObjectSummary));
+                actual.getS3Files().add(new S3File(ruta[ruta.length - 1], s3ObjectSummary.getKey()));
             }
         }
         panelCentral = new Explorador(this, raiz);
     }
 
-    private S3Folder addCarpetas(S3Folder actual, String carpeta) {
+    private S3Folder addCarpetas(S3Folder actual, String carpeta, String fullpath) {
         boolean existeCarpeta = false;
         for (S3Folder s3Folder : actual.getS3Forlders()) {
             if (Objects.equals(s3Folder.getName(), carpeta)) {
@@ -77,7 +77,7 @@ public class MainUI extends JFrame {
             }
         }
         if (!existeCarpeta) {
-            S3Folder nueva = new S3Folder(carpeta);
+            S3Folder nueva = new S3Folder(carpeta, fullpath);
             actual.getS3Forlders().add(nueva);
             actual = nueva;
         }
@@ -197,10 +197,6 @@ public class MainUI extends JFrame {
         return trayIcon;
     }
 
-    public void setTrayIcon(TrayIcon trayIcon) {
-        this.trayIcon = trayIcon;
-    }
-
     public JPanel getPanelCentral() {
         return panelCentral;
     }
@@ -213,15 +209,8 @@ public class MainUI extends JFrame {
         return configuracion;
     }
 
-    public void setConfiguracion(Configuracion configuracion) {
-        this.configuracion = configuracion;
-    }
-
     public S3Folder getRaiz() {
         return raiz;
     }
 
-    public void setRaiz(S3Folder raiz) {
-        this.raiz = raiz;
-    }
 }
