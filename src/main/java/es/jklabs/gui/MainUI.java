@@ -27,10 +27,9 @@ public class MainUI extends JFrame {
     private static ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
     private static final Logger LOG = Logger.getLogger();
     private Configuracion configuracion;
-    private JMenu jmArchivo;
-    private JMenu jmAyuda;
     private TrayIcon trayIcon;
     private JPanel panelCentral;
+    private S3Folder raiz;
 
     public MainUI(Configuracion configuracion) {
         this();
@@ -41,8 +40,13 @@ public class MainUI extends JFrame {
 
     private void cargarPantallaPrincipal() {
         super.setLayout(new BorderLayout(10, 10));
+        cargarPanelCentral();
+        super.add(panelCentral, BorderLayout.CENTER);
+    }
+
+    private void cargarPanelCentral() {
         ObjectListing elementos = UtilidadesS3.getRaiz(configuracion.getBucketConfig());
-        S3Folder raiz = new S3Folder();
+        raiz = new S3Folder();
         for (S3ObjectSummary s3ObjectSummary : elementos.getObjectSummaries()) {
             if (s3ObjectSummary.getKey().endsWith("/")) {
                 String[] ruta = s3ObjectSummary.getKey().split("/");
@@ -61,7 +65,6 @@ public class MainUI extends JFrame {
             }
         }
         panelCentral = new Explorador(this, raiz);
-        super.add(panelCentral, BorderLayout.CENTER);
     }
 
     private S3Folder addCarpetas(S3Folder actual, String carpeta) {
@@ -107,7 +110,7 @@ public class MainUI extends JFrame {
 
     private void cargarMenu() {
         JMenuBar menu = new JMenuBar();
-        jmArchivo = new JMenu(mensajes.getString("archivo"));
+        JMenu jmArchivo = new JMenu(mensajes.getString("archivo"));
         jmArchivo.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiConfiguracion = new JMenuItem(mensajes.getString("configuracion"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/settings.png"))));
@@ -121,7 +124,7 @@ public class MainUI extends JFrame {
         jmArchivo.add(jmiConfiguracion);
         jmArchivo.add(jmiExportar);
         jmArchivo.add(jmiImportar);
-        jmAyuda = new JMenu("Ayuda");
+        JMenu jmAyuda = new JMenu("Ayuda");
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiAcercaDe = new JMenuItem(mensajes.getString("acerca.de"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/info.png"))));
@@ -212,5 +215,13 @@ public class MainUI extends JFrame {
 
     public void setConfiguracion(Configuracion configuracion) {
         this.configuracion = configuracion;
+    }
+
+    public S3Folder getRaiz() {
+        return raiz;
+    }
+
+    public void setRaiz(S3Folder raiz) {
+        this.raiz = raiz;
     }
 }
