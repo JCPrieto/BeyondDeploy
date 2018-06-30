@@ -29,6 +29,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 * Sincronizacion continua de la carpeta
 * Mostrar el cursor de ocupado mientras se esta subiendo un archivo
 * Eliminar archivos del bucket
+* Eliminar archivos de logs vacios
 
 ### Changelog ###
 

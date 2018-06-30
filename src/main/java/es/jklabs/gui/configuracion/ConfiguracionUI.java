@@ -2,6 +2,7 @@ package es.jklabs.gui.configuracion;
 
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
+import es.jklabs.json.configuracion.BucketConfig;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesEncryptacion;
@@ -57,11 +58,15 @@ public class ConfiguracionUI extends JDialog {
         if (configuracion == null) {
             configuracion = new Configuracion();
         }
+        if (configuracion.getBucketConfig() == null) {
+            configuracion.setBucketConfig(new BucketConfig());
+        }
         configuracion.getBucketConfig().setBucketName(txBucketName.getText());
         configuracion.getBucketConfig().setAccesKey(txAccesKey.getText());
         configuracion.getBucketConfig().setSecretKey(UtilidadesEncryptacion.encrypt(String.valueOf(txSecretKey
                 .getPassword())));
         UtilidadesConfiguracion.guardarConfiguracion(configuracion);
+        padre.actualizarPanelCentral();
     }
 
     private boolean validaFormularioConfiguracion() {
@@ -121,7 +126,7 @@ public class ConfiguracionUI extends JDialog {
     }
 
     private void cargarDatosFormulario() {
-        if (configuracion != null) {
+        if (configuracion != null && configuracion.getBucketConfig() != null) {
             txBucketName.setText(configuracion.getBucketConfig().getBucketName());
             txAccesKey.setText(configuracion.getBucketConfig().getAccesKey());
             txSecretKey.setText(UtilidadesEncryptacion.decrypt(configuracion.getBucketConfig().getSecretKey()));

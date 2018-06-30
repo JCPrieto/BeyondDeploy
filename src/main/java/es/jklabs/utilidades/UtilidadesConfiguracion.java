@@ -56,6 +56,7 @@ public class UtilidadesConfiguracion {
         Configuracion configuracion = null;
         try {
             configuracion = mapper.readValue(file, Configuracion.class);
+            guardarConfiguracion(configuracion);
         } catch (FileNotFoundException e) {
             LOG.info("Fichero de configuracion no encontrado", e);
         } catch (IOException e) {

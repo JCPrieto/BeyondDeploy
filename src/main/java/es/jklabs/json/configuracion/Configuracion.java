@@ -9,7 +9,6 @@ public class Configuracion implements Serializable {
     private BucketConfig bucketConfig;
 
     public Configuracion() {
-        bucketConfig = new BucketConfig();
     }
 
     public BucketConfig getBucketConfig() {

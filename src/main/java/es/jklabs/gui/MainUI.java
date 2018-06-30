@@ -1,5 +1,6 @@
 package es.jklabs.gui;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import es.jklabs.gui.configuracion.ConfiguracionUI;
@@ -49,26 +50,39 @@ public class MainUI extends JFrame {
     }
 
     private void cargarPanelCentral() {
-        ObjectListing elementos = UtilidadesS3.getRaiz(configuracion.getBucketConfig());
-        raiz = new S3Folder();
-        for (S3ObjectSummary s3ObjectSummary : elementos.getObjectSummaries()) {
-            if (s3ObjectSummary.getKey().endsWith("/")) {
-                String[] ruta = s3ObjectSummary.getKey().split("/");
-                S3Folder actual = raiz;
-                for (String carpeta : ruta) {
-                    actual = addCarpetas(actual, carpeta, s3ObjectSummary.getKey());
-                }
-            } else {
-                String[] ruta = s3ObjectSummary.getKey().split("/");
-                S3Folder actual = raiz;
-                for (int i = 0; i < ruta.length - 1; i++) {
-                    String carpeta = ruta[i];
-                    actual = addCarpetas(actual, carpeta, s3ObjectSummary.getKey());
-                }
-                actual.getS3Files().add(new S3File(ruta[ruta.length - 1], s3ObjectSummary.getKey()));
-            }
+        if (configuracion.getBucketConfig() != null) {
+            pintarElementosBucket();
+        } else {
+            panelCentral = new JPanel();
         }
-        panelCentral = new Explorador(this, raiz);
+    }
+
+    private void pintarElementosBucket() {
+        try {
+            ObjectListing elementos = UtilidadesS3.getRaiz(configuracion.getBucketConfig());
+            raiz = new S3Folder();
+            for (S3ObjectSummary s3ObjectSummary : elementos.getObjectSummaries()) {
+                if (s3ObjectSummary.getKey().endsWith("/")) {
+                    String[] ruta = s3ObjectSummary.getKey().split("/");
+                    S3Folder actual = raiz;
+                    for (String carpeta : ruta) {
+                        actual = addCarpetas(actual, carpeta, s3ObjectSummary.getKey());
+                    }
+                } else {
+                    String[] ruta = s3ObjectSummary.getKey().split("/");
+                    S3Folder actual = raiz;
+                    for (int i = 0; i < ruta.length - 1; i++) {
+                        String carpeta = ruta[i];
+                        actual = addCarpetas(actual, carpeta, s3ObjectSummary.getKey());
+                    }
+                    actual.getS3Files().add(new S3File(ruta[ruta.length - 1], s3ObjectSummary.getKey()));
+                }
+            }
+            panelCentral = new Explorador(this, raiz);
+        } catch (AmazonS3Exception e) {
+            Growls.mostrarError(this, "configura.bucket.incorrecta", e);
+            panelCentral = new JPanel();
+        }
     }
 
     private S3Folder addCarpetas(S3Folder actual, String carpeta, String fullpath) {
@@ -171,7 +185,15 @@ public class MainUI extends JFrame {
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             configuracion = UtilidadesConfiguracion.loadConfig(file);
+            actualizarPanelCentral();
         }
+    }
+
+    public void actualizarPanelCentral() {
+        this.remove(panelCentral);
+        cargarPanelCentral();
+        super.add(panelCentral, BorderLayout.CENTER);
+        SwingUtilities.updateComponentTreeUI(panelCentral);
     }
 
     private void exportarConfiguracion() {
