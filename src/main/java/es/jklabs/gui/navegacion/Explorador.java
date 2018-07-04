@@ -39,7 +39,7 @@ public class Explorador extends JPanel {
 
     private void cargarElementos() {
         cargarBotoneraSuperior();
-        cargarPanelCentral();
+        recargarPantalla();
     }
 
     private void cargarBotoneraSuperior() {
@@ -79,14 +79,18 @@ public class Explorador extends JPanel {
     }
 
     private void recargarPantalla() {
-        remove(jpMenu);
+        if (jpMenu != null) {
+            remove(jpMenu);
+        }
         folder.getS3Forlders().clear();
         folder.getS3Files().clear();
         ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), folder
                 .getFullpath());
         UtilidadesS3.actualizarCarpeta(folder, elementos);
         cargarPanelCentral();
-        SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
+        if (padre.getPanelCentral() != null) {
+            SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
+        }
     }
 
     private void retroceder() {

@@ -1,10 +1,8 @@
 package es.jklabs.gui.utilidades.listener;
 
-import com.amazonaws.services.s3.model.ObjectListing;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.navegacion.Explorador;
 import es.jklabs.s3.model.S3Folder;
-import es.jklabs.utilidades.UtilidadesS3;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,17 +25,10 @@ public class S3FolderListener implements MouseListener {
     @Override
     public void mouseClicked(MouseEvent e) {
         padre.remove(explorador);
-        Explorador siguiente = getExplorador();
+        Explorador siguiente = new Explorador(padre, s3Folder, explorador);
         padre.setPanelCentral(siguiente);
         padre.add(siguiente, BorderLayout.CENTER);
         SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
-    }
-
-    private Explorador getExplorador() {
-        ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), s3Folder
-                .getFullpath());
-        UtilidadesS3.actualizarCarpeta(s3Folder, elementos);
-        return new Explorador(padre, s3Folder, explorador);
     }
 
     @Override

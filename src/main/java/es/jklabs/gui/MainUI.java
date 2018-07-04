@@ -1,19 +1,18 @@
 package es.jklabs.gui;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import es.jklabs.gui.configuracion.ConfiguracionUI;
 import es.jklabs.gui.dialogos.AcercaDe;
 import es.jklabs.gui.navegacion.Explorador;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.filter.JSonFilter;
 import es.jklabs.json.configuracion.Configuracion;
-import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
-import es.jklabs.utilidades.*;
+import es.jklabs.utilidades.Constantes;
+import es.jklabs.utilidades.Logger;
+import es.jklabs.utilidades.UtilidadesConfiguracion;
+import es.jklabs.utilidades.UtilidadesFirebase;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -60,19 +59,7 @@ public class MainUI extends JFrame {
 
     private void pintarElementosBucket() {
         try {
-            ObjectListing elementos = UtilidadesS3.getRaiz(configuracion.getBucketConfig());
             raiz = new S3Folder();
-            for (S3ObjectSummary s3ObjectSummary : elementos.getObjectSummaries()) {
-                if (s3ObjectSummary.getKey().endsWith("/")) {
-                    String[] ruta = s3ObjectSummary.getKey().split("/");
-                    raiz.addCarpetas(ruta[0], s3ObjectSummary.getKey());
-                } else {
-                    String rutaArchivo = StringUtils.remove(s3ObjectSummary.getKey(), raiz.getFullpath());
-                    if (!rutaArchivo.contains("/")) {
-                        raiz.getS3Files().add(new S3File(rutaArchivo, s3ObjectSummary.getKey()));
-                    }
-                }
-            }
             panelCentral = new Explorador(this, raiz);
         } catch (AmazonS3Exception e) {
             Growls.mostrarError(this, "configura.bucket.incorrecta", e);

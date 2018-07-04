@@ -74,8 +74,12 @@ public class UtilidadesS3 {
     }
 
     public static ObjectListing getObjetos(BucketConfig bucketConfig, String fullpath) {
-        AmazonS3 s3 = getAmazonS3(bucketConfig);
-        return s3.listObjects(bucketConfig.getBucketName(), fullpath);
+        if (fullpath.isEmpty()) {
+            return getRaiz(bucketConfig);
+        } else {
+            AmazonS3 s3 = getAmazonS3(bucketConfig);
+            return s3.listObjects(bucketConfig.getBucketName(), fullpath);
+        }
     }
 
     public static void actualizarCarpeta(S3Folder folder, ObjectListing elementos) {
