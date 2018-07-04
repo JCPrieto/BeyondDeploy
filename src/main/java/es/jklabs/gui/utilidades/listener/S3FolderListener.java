@@ -1,13 +1,10 @@
 package es.jklabs.gui.utilidades.listener;
 
 import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.navegacion.Explorador;
-import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
 import es.jklabs.utilidades.UtilidadesS3;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,20 +34,9 @@ public class S3FolderListener implements MouseListener {
     }
 
     private Explorador getExplorador() {
-        ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), s3Folder.getFullpath());
-        for (S3ObjectSummary s3ObjectSummary : elementos.getObjectSummaries()) {
-            String rutaObjeto = StringUtils.remove(s3ObjectSummary.getKey(), s3Folder.getFullpath());
-            if (!rutaObjeto.isEmpty()) {
-                if (rutaObjeto.endsWith("/")) {
-                    String[] ruta = rutaObjeto.split("/");
-                    s3Folder.addCarpetas(ruta[0], s3ObjectSummary.getKey());
-                } else {
-                    if (!rutaObjeto.contains("/")) {
-                        s3Folder.getS3Files().add(new S3File(rutaObjeto, s3ObjectSummary.getKey()));
-                    }
-                }
-            }
-        }
+        ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), s3Folder
+                .getFullpath());
+        UtilidadesS3.actualizarCarpeta(s3Folder, elementos);
         return new Explorador(padre, s3Folder, explorador);
     }
 

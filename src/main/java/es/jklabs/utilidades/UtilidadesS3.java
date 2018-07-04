@@ -1,6 +1,5 @@
 package es.jklabs.utilidades;
 
-
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
@@ -9,10 +8,13 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.BucketConfig;
 import es.jklabs.s3.model.S3File;
+import es.jklabs.s3.model.S3Folder;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.io.*;
@@ -65,15 +67,30 @@ public class UtilidadesS3 {
         }
     }
 
-    public static boolean uploadFile(File file, String fullpath, BucketConfig bucketConfig) {
+    public static void uploadFile(File file, String fullpath, BucketConfig bucketConfig) {
         AmazonS3 s3 = getAmazonS3(bucketConfig);
         PutObjectRequest request = new PutObjectRequest(bucketConfig.getBucketName(), fullpath + file.getName(), file);
         s3.putObject(request);
-        return true;
     }
 
     public static ObjectListing getObjetos(BucketConfig bucketConfig, String fullpath) {
         AmazonS3 s3 = getAmazonS3(bucketConfig);
         return s3.listObjects(bucketConfig.getBucketName(), fullpath);
+    }
+
+    public static void actualizarCarpeta(S3Folder folder, ObjectListing elementos) {
+        for (S3ObjectSummary s3ObjectSummary : elementos.getObjectSummaries()) {
+            String rutaObjeto = StringUtils.remove(s3ObjectSummary.getKey(), folder.getFullpath());
+            if (!rutaObjeto.isEmpty()) {
+                if (rutaObjeto.endsWith("/")) {
+                    String[] ruta = rutaObjeto.split("/");
+                    folder.addCarpetas(ruta[0], s3ObjectSummary.getKey());
+                } else {
+                    if (!rutaObjeto.contains("/")) {
+                        folder.getS3Files().add(new S3File(rutaObjeto, s3ObjectSummary.getKey()));
+                    }
+                }
+            }
+        }
     }
 }

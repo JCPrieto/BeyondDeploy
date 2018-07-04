@@ -1,7 +1,7 @@
 package es.jklabs.gui.navegacion;
 
+import com.amazonaws.services.s3.model.ObjectListing;
 import es.jklabs.gui.MainUI;
-import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.listener.S3FileListener;
 import es.jklabs.gui.utilidades.listener.S3FolderListener;
 import es.jklabs.s3.model.S3File;
@@ -72,19 +72,21 @@ public class Explorador extends JPanel {
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             padre.bloquearPantalla();
-            if (UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion().getBucketConfig())) {
-                S3File nuevo = new S3File(file.getName(), folder.getFullpath() + file.getName());
-                if (!folder.getS3Files().contains(nuevo)) {
-                    folder.getS3Files().add(nuevo);
-                    addObjeto(nuevo);
-                    SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
-                }
-                Growls.mostrarInfo(padre, "subida.realizada");
-            } else {
-                Growls.mostrarAviso(padre, "subida.al.bucket");
-            }
+            UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion().getBucketConfig());
+            recargarPantalla();
             padre.desbloquearPantalla();
         }
+    }
+
+    private void recargarPantalla() {
+        remove(jpMenu);
+        folder.getS3Forlders().clear();
+        folder.getS3Files().clear();
+        ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), folder
+                .getFullpath());
+        UtilidadesS3.actualizarCarpeta(folder, elementos);
+        cargarPanelCentral();
+        SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
     }
 
     private void retroceder() {
