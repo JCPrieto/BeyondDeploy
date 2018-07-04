@@ -71,4 +71,9 @@ public class UtilidadesS3 {
         s3.putObject(request);
         return true;
     }
+
+    public static ObjectListing getObjetos(BucketConfig bucketConfig, String fullpath) {
+        AmazonS3 s3 = getAmazonS3(bucketConfig);
+        return s3.listObjects(bucketConfig.getBucketName(), fullpath);
+    }
 }

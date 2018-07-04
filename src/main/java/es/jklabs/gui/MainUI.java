@@ -13,6 +13,7 @@ import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
 import es.jklabs.utilidades.*;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -64,18 +65,12 @@ public class MainUI extends JFrame {
             for (S3ObjectSummary s3ObjectSummary : elementos.getObjectSummaries()) {
                 if (s3ObjectSummary.getKey().endsWith("/")) {
                     String[] ruta = s3ObjectSummary.getKey().split("/");
-                    S3Folder actual = raiz;
-                    for (String carpeta : ruta) {
-                        actual = addCarpetas(actual, carpeta, s3ObjectSummary.getKey());
-                    }
+                    raiz.addCarpetas(ruta[0], s3ObjectSummary.getKey());
                 } else {
-                    String[] ruta = s3ObjectSummary.getKey().split("/");
-                    S3Folder actual = raiz;
-                    for (int i = 0; i < ruta.length - 1; i++) {
-                        String carpeta = ruta[i];
-                        actual = addCarpetas(actual, carpeta, s3ObjectSummary.getKey());
+                    String rutaArchivo = StringUtils.remove(s3ObjectSummary.getKey(), raiz.getFullpath());
+                    if (!rutaArchivo.contains("/")) {
+                        raiz.getS3Files().add(new S3File(rutaArchivo, s3ObjectSummary.getKey()));
                     }
-                    actual.getS3Files().add(new S3File(ruta[ruta.length - 1], s3ObjectSummary.getKey()));
                 }
             }
             panelCentral = new Explorador(this, raiz);
@@ -83,23 +78,6 @@ public class MainUI extends JFrame {
             Growls.mostrarError(this, "configura.bucket.incorrecta", e);
             panelCentral = new JPanel();
         }
-    }
-
-    private S3Folder addCarpetas(S3Folder actual, String carpeta, String fullpath) {
-        boolean existeCarpeta = false;
-        for (S3Folder s3Folder : actual.getS3Forlders()) {
-            if (Objects.equals(s3Folder.getName(), carpeta)) {
-                existeCarpeta = true;
-                actual = s3Folder;
-                break;
-            }
-        }
-        if (!existeCarpeta) {
-            S3Folder nueva = new S3Folder(carpeta, fullpath);
-            actual.getS3Forlders().add(nueva);
-            actual = nueva;
-        }
-        return actual;
     }
 
     private void cargarPantallaPrincipal() {

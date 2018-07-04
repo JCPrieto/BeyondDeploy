@@ -3,6 +3,7 @@ package es.jklabs.s3.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class S3Folder implements Serializable {
 
@@ -18,7 +19,7 @@ public class S3Folder implements Serializable {
         this.fullpath = "";
     }
 
-    public S3Folder(String name, String fullpath) {
+    private S3Folder(String name, String fullpath) {
         this();
         this.name = name;
         this.fullpath = fullpath;
@@ -40,4 +41,17 @@ public class S3Folder implements Serializable {
         return fullpath;
     }
 
+    public void addCarpetas(String carpeta, String fullpath) {
+        boolean existeCarpeta = false;
+        for (S3Folder s3Folder : getS3Forlders()) {
+            if (Objects.equals(s3Folder.getName(), carpeta)) {
+                existeCarpeta = true;
+                break;
+            }
+        }
+        if (!existeCarpeta) {
+            S3Folder nueva = new S3Folder(carpeta, fullpath);
+            getS3Forlders().add(nueva);
+        }
+    }
 }

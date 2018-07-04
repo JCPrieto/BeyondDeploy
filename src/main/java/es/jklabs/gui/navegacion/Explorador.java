@@ -90,6 +90,8 @@ public class Explorador extends JPanel {
     private void retroceder() {
         padre.remove(this);
         padre.setPanelCentral(anterior);
+        folder.getS3Forlders().clear();
+        folder.getS3Files().clear();
         padre.add(anterior, BorderLayout.CENTER);
         SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
     }
