@@ -95,6 +95,7 @@ public class Explorador extends JPanel {
 
     private void retroceder() {
         padre.remove(this);
+        anterior.recargarPantalla();
         padre.setPanelCentral(anterior);
         folder.getS3Forlders().clear();
         folder.getS3Files().clear();
