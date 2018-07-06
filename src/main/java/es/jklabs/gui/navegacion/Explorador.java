@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.listener.S3FileListener;
 import es.jklabs.gui.utilidades.listener.S3FolderListener;
+import es.jklabs.gui.utilidades.task.ExploradorReloader;
 import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
 import es.jklabs.utilidades.UtilidadesS3;
@@ -14,15 +15,17 @@ import java.io.File;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.Timer;
 
 public class Explorador extends JPanel {
 
     private static final long serialVersionUID = -8285796640106146202L;
     private static ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
-    private final MainUI padre;
+    private MainUI padre;
     private Explorador anterior;
     private S3Folder folder;
     private JPanel jpMenu;
+    private transient Timer timer;
 
     public Explorador(MainUI padre, S3Folder folder) {
         super();
@@ -39,7 +42,8 @@ public class Explorador extends JPanel {
 
     private void cargarElementos() {
         cargarBotoneraSuperior();
-        recargarPantalla();
+        timer = new Timer();
+        timer.schedule(new ExploradorReloader(this), 0, 60000);
     }
 
     private void cargarBotoneraSuperior() {
@@ -49,7 +53,7 @@ public class Explorador extends JPanel {
             JButton jbAtras = new JButton(mensajes.getString("atras"));
             ImageIcon imageIcon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
                     ("img/icons/back.png")));
-            Image img = imageIcon.getImage().getScaledInstance(24, 24, java.awt.Image
+            Image img = imageIcon.getImage().getScaledInstance(24, 24, Image
                     .SCALE_SMOOTH);
             jbAtras.setIcon(new ImageIcon(img));
             jbAtras.addActionListener(l -> retroceder());
@@ -78,7 +82,7 @@ public class Explorador extends JPanel {
         }
     }
 
-    private void recargarPantalla() {
+    public void recargarPantalla() {
         if (jpMenu != null) {
             remove(jpMenu);
         }
@@ -94,6 +98,8 @@ public class Explorador extends JPanel {
     }
 
     private void retroceder() {
+        timer.cancel();
+        timer.purge();
         padre.remove(this);
         anterior.recargarPantalla();
         padre.setPanelCentral(anterior);
@@ -128,6 +134,10 @@ public class Explorador extends JPanel {
         jLabel.setHorizontalTextPosition(SwingConstants.CENTER);
         jLabel.addMouseListener(new S3FolderListener(padre, this, jLabel, s3Folder));
         jpMenu.add(jLabel);
+    }
+
+    public MainUI getPadre() {
+        return padre;
     }
 
 }
