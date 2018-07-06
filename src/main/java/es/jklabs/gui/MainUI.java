@@ -200,13 +200,4 @@ public class MainUI extends JFrame {
         return raiz;
     }
 
-    public void bloquearPantalla() {
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        this.setEnabled(false);
-    }
-
-    public void desbloquearPantalla() {
-        this.setEnabled(true);
-        this.setCursor(null);
-    }
 }

@@ -26,11 +26,13 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     
 ### ToDo ###
 
-* Mostrar el cursor de ocupado mientras se esta subiendo un archivo
 * Eliminar archivos del bucket
 * Eliminar archivos de logs vacios
 
 ### Changelog ###
+
+* 0.1.1
+    * Mostrar el cursor de ocupado mientras se esta subiendo un archivo
 
 * 0.1.0
     * Sincronización continua de las carpetas

@@ -2,6 +2,7 @@ package es.jklabs.gui.navegacion;
 
 import com.amazonaws.services.s3.model.ObjectListing;
 import es.jklabs.gui.MainUI;
+import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.listener.S3FileListener;
 import es.jklabs.gui.utilidades.listener.S3FolderListener;
 import es.jklabs.gui.utilidades.task.ExploradorReloader;
@@ -75,10 +76,13 @@ public class Explorador extends JPanel {
         int retorno = fc.showOpenDialog(this);
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
-            padre.bloquearPantalla();
+            padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            this.setEnabled(false);
             UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion().getBucketConfig());
+            Growls.mostrarInfo(padre, "subida.realizada");
+            this.setEnabled(true);
+            padre.setCursor(null);
             recargarPantalla();
-            padre.desbloquearPantalla();
         }
     }
 

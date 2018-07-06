@@ -17,6 +17,7 @@ import es.jklabs.s3.model.S3Folder;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.util.Objects;
 
@@ -26,7 +27,7 @@ public class UtilidadesS3 {
 
     }
 
-    public static ObjectListing getRaiz(BucketConfig bucketConfig) {
+    private static ObjectListing getRaiz(BucketConfig bucketConfig) {
         AmazonS3 s3 = getAmazonS3(bucketConfig);
         return s3.listObjects(bucketConfig.getBucketName());
     }
@@ -45,6 +46,7 @@ public class UtilidadesS3 {
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int retorno = fc.showSaveDialog(ventana);
         if (retorno == JFileChooser.APPROVE_OPTION) {
+            ventana.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             File directorio = fc.getSelectedFile();
             AmazonS3 s3 = getAmazonS3(bucketConfig);
             S3Object s3Object = s3.getObject(bucketConfig.getBucketName(), file.getFullPath());
@@ -63,6 +65,8 @@ public class UtilidadesS3 {
                 Growls.mostrarInfo(ventana, "archivo.descargado.correctamente");
             } catch (InterruptedException | IOException e) {
                 Growls.mostrarError(ventana, "descargar.archivo", e);
+            } finally {
+                ventana.setCursor(null);
             }
         }
     }
