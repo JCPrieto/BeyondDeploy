@@ -93,7 +93,7 @@ public class Explorador extends JPanel {
         UtilidadesS3.actualizarCarpeta(folder, elementos);
         cargarPanelCentral();
         if (padre.getPanelCentral() != null) {
-            SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
+            SwingUtilities.invokeLater(() -> SwingUtilities.updateComponentTreeUI(padre.getPanelCentral()));
         }
     }
 
