@@ -87,6 +87,7 @@ public class Explorador extends JPanel {
     }
 
     public void recargarPantalla() {
+        padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (jpMenu != null) {
             remove(jpMenu);
         }
@@ -99,6 +100,7 @@ public class Explorador extends JPanel {
         if (padre.getPanelCentral() != null) {
             SwingUtilities.invokeLater(() -> SwingUtilities.updateComponentTreeUI(padre.getPanelCentral()));
         }
+        padre.setCursor(null);
     }
 
     private void retroceder() {

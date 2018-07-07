@@ -1,6 +1,7 @@
 package es.jklabs.gui.utilidades.listener;
 
 import es.jklabs.gui.MainUI;
+import es.jklabs.gui.menu.contextual.S3FilePopUp;
 import es.jklabs.gui.navegacion.Explorador;
 import es.jklabs.s3.model.S3File;
 import es.jklabs.utilidades.UtilidadesS3;
@@ -26,18 +27,21 @@ public class S3FileListener implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        UtilidadesS3.getObject(padre, padre.getConfiguracion().getBucketConfig(), s3File);
-        //ToDo Descargar archivo
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            UtilidadesS3.getObject(padre, padre.getConfiguracion().getBucketConfig(), s3File);
+        }
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-
+        if (SwingUtilities.isRightMouseButton(e)) {
+            S3FilePopUp s3FilePopUp = new S3FilePopUp(explorador, s3File);
+            s3FilePopUp.show(e.getComponent(), e.getX(), e.getY());
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-
     }
 
     @Override

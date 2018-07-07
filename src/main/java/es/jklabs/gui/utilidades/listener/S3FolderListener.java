@@ -24,13 +24,13 @@ public class S3FolderListener implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        padre.remove(explorador);
-        Explorador siguiente = new Explorador(padre, s3Folder, explorador);
-        padre.setPanelCentral(siguiente);
-        padre.add(siguiente, BorderLayout.CENTER);
-        padre.setCursor(null);
-        SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            padre.remove(explorador);
+            Explorador siguiente = new Explorador(padre, s3Folder, explorador);
+            padre.setPanelCentral(siguiente);
+            padre.add(siguiente, BorderLayout.CENTER);
+            SwingUtilities.updateComponentTreeUI(padre.getPanelCentral());
+        }
     }
 
     @Override

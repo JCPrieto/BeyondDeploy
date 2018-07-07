@@ -5,10 +5,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.*;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.BucketConfig;
@@ -100,5 +97,11 @@ public class UtilidadesS3 {
                 }
             }
         }
+    }
+
+    public static void deleteObject(MainUI ventana, BucketConfig bucketConfig, S3File s3File) {
+        AmazonS3 s3 = getAmazonS3(bucketConfig);
+        s3.deleteObject(new DeleteObjectRequest(bucketConfig.getBucketName(), s3File.getFullPath()));
+        Growls.mostrarInfo(ventana, "archivo.eliminado.correctamente");
     }
 }
