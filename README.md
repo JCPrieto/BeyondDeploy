@@ -26,9 +26,10 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     
 ### ToDo ###
 
-* Eliminar archivos de logs vacios
-
 ### Changelog ###
+
+* 0.2.1
+    * Eliminar archivos de logs vacios
 
 * 0.2.0
     * Añadido menú contextual en los archivos para poder descargarlos o eliminarlos

@@ -1,8 +1,15 @@
 package es.jklabs.utilidades;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.FileHandler;
@@ -14,14 +21,12 @@ public class Logger {
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(Logger.class.getName());
     private static Logger logger;
     private static ResourceBundle errores = ResourceBundle.getBundle("i18n/errores", Locale.getDefault());
+    private static final String ARCHIVO = "log_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
 
     private Logger() {
-        LocalDate hoy = LocalDate.now();
         FileHandler fh;
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String archivo = "log_" + hoy.format(dtf) + ".log";
         try {
-            fh = new FileHandler(archivo, true);
+            fh = new FileHandler(ARCHIVO, true);
             LOG.addHandler(fh);
             LOG.setUseParentHandlers(false);
             SimpleFormatter formatter = new SimpleFormatter();
@@ -37,6 +42,29 @@ public class Logger {
             logger = new Logger();
         }
         return logger;
+    }
+
+    public static void eliminarLogsVacios() {
+        File carpeta = new File(System.getProperty("user.dir"));
+        File[] lista = carpeta.listFiles();
+        if (lista != null) {
+            Arrays.stream(lista).filter(f -> f.getName().endsWith(".log") && !StringUtils.equals(f.getName(),
+                    ARCHIVO)).forEach(Logger::eliminarLogsVacios);
+            for (File archivo : lista) eliminarLogsVacios(archivo);
+        }
+    }
+
+    private static void eliminarLogsVacios(File file) {
+        try (FileReader fr = new FileReader(file)) {
+            BufferedReader br = new BufferedReader(fr);
+            String linea = br.readLine();
+            if (linea == null) {
+                br.close();
+                Files.delete(file.toPath());
+            }
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, errores.getString("lectura.logs"), e);
+        }
     }
 
     public void error(String mensaje, Exception e) {

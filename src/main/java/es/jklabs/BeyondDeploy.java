@@ -13,6 +13,7 @@ public class BeyondDeploy {
     private static final Logger LOG = Logger.getLogger();
 
     public static void main(String[] args) {
+        Logger.eliminarLogsVacios();
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             Configuracion configuracion = UtilidadesConfiguracion.loadConfig();
