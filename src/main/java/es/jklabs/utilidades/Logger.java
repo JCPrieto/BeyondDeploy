@@ -48,9 +48,8 @@ public class Logger {
         File carpeta = new File(System.getProperty("user.dir"));
         File[] lista = carpeta.listFiles();
         if (lista != null) {
-            Arrays.stream(lista).filter(f -> f.getName().endsWith(".log") && !StringUtils.equals(f.getName(),
-                    ARCHIVO)).forEach(Logger::eliminarLogsVacios);
-            for (File archivo : lista) eliminarLogsVacios(archivo);
+            Arrays.stream(lista).filter(f -> f.isFile() && f.getName().endsWith(".log") && !StringUtils.equals
+                    (f.getName(), ARCHIVO)).forEach(Logger::eliminarLogsVacios);
         }
     }
 
