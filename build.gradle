@@ -1,5 +1,5 @@
 group 'es.jklabs.desktop'
-version '0.2.1'
+version '0.2.2'
 
 apply plugin: 'java'
 apply plugin: 'application'

@@ -124,12 +124,22 @@ public class Explorador extends JPanel {
 
     private void addObjeto(S3File s3File) {
         JLabel jLabel = new JLabel(s3File.getName());
+        String icono;
+        if (esArchivoComprimido(s3File.getName())) {
+            icono = "img/icons/compress.png";
+        } else {
+            icono = "img/icons/file.png";
+        }
         jLabel.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/file.png"))));
+                (icono))));
         jLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
         jLabel.setHorizontalTextPosition(SwingConstants.CENTER);
         jLabel.addMouseListener(new S3FileListener(padre, this, jLabel, s3File));
         jpMenu.add(jLabel);
+    }
+
+    private boolean esArchivoComprimido(String name) {
+        return name.endsWith(".war") || name.endsWith(".zip") || name.endsWith(".rar");
     }
 
     private void addCarpeta(S3Folder s3Folder) {

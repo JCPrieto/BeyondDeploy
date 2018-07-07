@@ -5,7 +5,9 @@ import es.jklabs.s3.model.S3File;
 import es.jklabs.utilidades.UtilidadesS3;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class S3FilePopUp extends JPopupMenu {
@@ -23,9 +25,14 @@ public class S3FilePopUp extends JPopupMenu {
     }
 
     private void cargarElementos() {
-        JMenuItem jmiDescargar = new JMenuItem(mensajes.getString("descargar"));
+        JMenuItem jmiDescargar = new JMenuItem(mensajes.getString("descargar"), new ImageIcon(Objects
+                .requireNonNull(getClass().getClassLoader().getResource("img/icons/download.png"))));
         jmiDescargar.addActionListener(l -> descargarArchivo());
-        JMenuItem jmiEliminar = new JMenuItem(mensajes.getString("eliminar"));
+        ImageIcon imageIcon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
+                ("img/icons/trash.png")));
+        Image img = imageIcon.getImage().getScaledInstance(24, 24, Image
+                .SCALE_SMOOTH);
+        JMenuItem jmiEliminar = new JMenuItem(mensajes.getString("eliminar"), new ImageIcon(img));
         jmiEliminar.addActionListener(l -> elminarArchivo());
         add(jmiDescargar);
         add(jmiEliminar);

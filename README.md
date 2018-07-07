@@ -28,6 +28,10 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.2.2
+    * Se añade icono para los archivos comprimidos
+    * Cambio del color del icono de subida y bajada de archivos para que se vean mejor sobre fondos claros
+
 * 0.2.1
     * Eliminar archivos de logs vacios
 
