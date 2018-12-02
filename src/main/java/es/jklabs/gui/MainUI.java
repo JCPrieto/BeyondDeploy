@@ -12,6 +12,7 @@ import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesFirebase;
+import javafx.embed.swing.JFXPanel;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
@@ -28,12 +29,12 @@ public class MainUI extends JFrame {
     private static ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
     private static final Logger LOG = Logger.getLogger();
     private Configuracion configuracion;
-    private TrayIcon trayIcon;
     private JPanel panelCentral;
     private S3Folder raiz;
 
-    public MainUI(Configuracion configuracion) {
+    public MainUI(JFXPanel fxPanel, Configuracion configuracion) {
         this();
+        add(fxPanel);
         this.configuracion = configuracion;
         cargarPantallaPrincipal();
         super.pack();
@@ -46,7 +47,6 @@ public class MainUI extends JFrame {
         super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(500, 500));
         cargarMenu();
-        cargarNotificaciones();
     }
 
     private void cargarPanelCentral() {
@@ -62,7 +62,7 @@ public class MainUI extends JFrame {
             raiz = new S3Folder();
             panelCentral = new Explorador(this, raiz);
         } catch (AmazonS3Exception e) {
-            Growls.mostrarError(this, "configura.bucket.incorrecta", e);
+            Growls.mostrarError("configura.bucket.incorrecta", e);
             panelCentral = new JPanel();
         }
     }
@@ -71,20 +71,6 @@ public class MainUI extends JFrame {
         super.setLayout(new BorderLayout());
         cargarPanelCentral();
         super.add(panelCentral, BorderLayout.CENTER);
-    }
-
-    private void cargarNotificaciones() {
-        SystemTray tray = SystemTray.getSystemTray();
-        //Alternative (if the icon is on the classpath):
-        trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/s3-bucket.png"))).getImage(), Constantes.NOMBRE_APP);
-        //Let the system resizes the image if needed
-        trayIcon.setImageAutoSize(true);
-        try {
-            tray.add(trayIcon);
-        } catch (AWTException e) {
-            LOG.error("establecer.icono.systray", e);
-        }
     }
 
     private void cargarMenu() {
@@ -131,7 +117,7 @@ public class MainUI extends JFrame {
         try {
             UtilidadesFirebase.descargaNuevaVersion(this);
         } catch (InterruptedException e) {
-            Growls.mostrarError(this, "descargar.nueva.version", e);
+            Growls.mostrarError("descargar.nueva.version", e);
             Thread.currentThread().interrupt();
         }
     }
@@ -178,10 +164,6 @@ public class MainUI extends JFrame {
     private void abrirConfiguracion() {
         ConfiguracionUI configuracionUI = new ConfiguracionUI(this, configuracion);
         configuracionUI.setVisible(true);
-    }
-
-    public TrayIcon getTrayIcon() {
-        return trayIcon;
     }
 
     public JPanel getPanelCentral() {

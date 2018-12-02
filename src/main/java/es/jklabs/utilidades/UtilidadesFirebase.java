@@ -34,12 +34,12 @@ public class UtilidadesFirebase {
         instanciarFirebase();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference(REFERENCE);
         Aplicacion app = getAplicacion(ref);
-        return diferenteVersion(app.getUltimaVersion(), Constantes.VERSION);
+        return diferenteVersion(app.getUltimaVersion());
     }
 
-    private static boolean diferenteVersion(String serverVersion, String appVersion) {
+    private static boolean diferenteVersion(String serverVersion) {
         String[] sv = serverVersion.split("\\.");
-        String[] av = appVersion.split("\\.");
+        String[] av = Constantes.VERSION.split("\\.");
         return Integer.parseInt(sv[0]) > Integer.parseInt(av[0]) || Integer.parseInt(sv[0]) == Integer.parseInt(av[0]) && (Integer.parseInt(sv[1]) > Integer.parseInt(av[1]) || Integer.parseInt(sv[1]) == Integer.parseInt(av[1]) && Integer.parseInt(sv[2]) > Integer.parseInt(av[2]));
     }
 
@@ -93,12 +93,12 @@ public class UtilidadesFirebase {
                             .BlobGetOption.fields(Storage.BlobField.SIZE));
                     blob.downloadTo(Paths.get(directorio.getPath() + System.getProperty("file.separator") + getNombreApp(app)));
                     actualizarNumDescargas();
-                    Growls.mostrarInfo(ventana, null, "nueva.version.descargada");
+                    Growls.mostrarInfo(null, "nueva.version.descargada");
                 } else {
                     LOG.info("Error de lectura de la BBDD");
                 }
             } catch (AccessDeniedException e) {
-                Growls.mostrarError(ventana, null, "path.sin.permiso.escritura", e);
+                Growls.mostrarError(null, "path.sin.permiso.escritura", e);
                 descargaNuevaVersion(ventana);
             } catch (IOException e) {
                 LOG.error("descargar.nueva.version", e);

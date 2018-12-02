@@ -59,9 +59,9 @@ public class UtilidadesS3 {
                     out.write(buf, 0, count);
                 }
                 in.close();
-                Growls.mostrarInfo(ventana, "archivo.descargado.correctamente");
+                Growls.mostrarInfo("archivo.descargado.correctamente");
             } catch (InterruptedException | IOException e) {
-                Growls.mostrarError(ventana, "descargar.archivo", e);
+                Growls.mostrarError("descargar.archivo", e);
             } finally {
                 ventana.setCursor(null);
             }
@@ -99,9 +99,9 @@ public class UtilidadesS3 {
         }
     }
 
-    public static void deleteObject(MainUI ventana, BucketConfig bucketConfig, S3File s3File) {
+    public static void deleteObject(BucketConfig bucketConfig, S3File s3File) {
         AmazonS3 s3 = getAmazonS3(bucketConfig);
         s3.deleteObject(new DeleteObjectRequest(bucketConfig.getBucketName(), s3File.getFullPath()));
-        Growls.mostrarInfo(ventana, "archivo.eliminado.correctamente");
+        Growls.mostrarInfo("archivo.eliminado.correctamente");
     }
 }

@@ -73,15 +73,15 @@ public class ConfiguracionUI extends JDialog {
         boolean valido = true;
         if (UtilidadesString.isEmpty(txBucketName)) {
             valido = false;
-            Growls.mostrarAviso(padre, GUARDAR_CONFIGURACION, "nombre.bucket.vacio");
+            Growls.mostrarAviso(GUARDAR_CONFIGURACION, "nombre.bucket.vacio");
         }
         if (UtilidadesString.isEmpty(txAccesKey)) {
             valido = false;
-            Growls.mostrarAviso(padre, GUARDAR_CONFIGURACION, "acces.key.vacio");
+            Growls.mostrarAviso(GUARDAR_CONFIGURACION, "acces.key.vacio");
         }
         if (UtilidadesString.isEmpty(txSecretKey)) {
             valido = false;
-            Growls.mostrarAviso(padre, GUARDAR_CONFIGURACION, "secret.key.vacio");
+            Growls.mostrarAviso(GUARDAR_CONFIGURACION, "secret.key.vacio");
         }
         return valido;
     }

@@ -1,6 +1,5 @@
 package es.jklabs.gui.utilidades.listener;
 
-import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 
 import javax.swing.*;
@@ -13,12 +12,10 @@ import java.net.URISyntaxException;
 
 public class UrlMouseListener implements MouseListener {
 
-    private final MainUI padre;
     private final JLabel etiqueta;
     private final String url;
 
-    public UrlMouseListener(MainUI padre, JLabel etiqueta, String url) {
-        this.padre = padre;
+    public UrlMouseListener(JLabel etiqueta, String url) {
         this.etiqueta = etiqueta;
         this.url = url;
     }
@@ -28,7 +25,7 @@ public class UrlMouseListener implements MouseListener {
         try {
             Desktop.getDesktop().browse(new URI(url));
         } catch (IOException | URISyntaxException e1) {
-            Growls.mostrarError(padre, "abrir.enlace", e1);
+            Growls.mostrarError("abrir.enlace", e1);
         }
     }
 

@@ -79,7 +79,7 @@ public class Explorador extends JPanel {
             padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             this.setEnabled(false);
             UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion().getBucketConfig());
-            Growls.mostrarInfo(padre, "subida.realizada");
+            Growls.mostrarInfo("subida.realizada");
             this.setEnabled(true);
             padre.setCursor(null);
             recargarPantalla();

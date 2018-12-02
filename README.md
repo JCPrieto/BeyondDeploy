@@ -23,10 +23,15 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     * AWS Amazon S3 https://aws.amazon.com/sdkforjava
     * Apache Commons Lang http://commons.apache.org/proper/commons-lang
     * Apache Commons IO http://commons.apache.org/proper/commons-io
+    * ControlsFX http://fxexperience.com/controlsfx
     
 ### ToDo ###
 
 ### Changelog ###
+
+* 0.3.0
+    * Se elimina el icono de Systray, por la incompatibilidad con Gnome3 y utilizamos ControlsFX para monstrar las 
+    notificaciones.
 
 * 0.2.2
     * Se añade icono para los archivos comprimidos

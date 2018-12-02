@@ -39,8 +39,7 @@ public class S3FilePopUp extends JPopupMenu {
     }
 
     private void elminarArchivo() {
-        UtilidadesS3.deleteObject(explorador.getPadre(), explorador.getPadre().getConfiguracion().getBucketConfig(),
-                s3File);
+        UtilidadesS3.deleteObject(explorador.getPadre().getConfiguracion().getBucketConfig(), s3File);
         explorador.recargarPantalla();
     }
 

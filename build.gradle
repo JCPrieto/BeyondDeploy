@@ -1,5 +1,5 @@
 group 'es.jklabs.desktop'
-version '0.2.2'
+version '0.3.0'
 
 apply plugin: 'java'
 apply plugin: 'application'
@@ -23,4 +23,5 @@ dependencies {
     compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.354'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile 'org.controlsfx:controlsfx:8.40.14'
 }
