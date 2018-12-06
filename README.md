@@ -29,6 +29,9 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.3.1
+    * Correccón de error al tratar los archivos json de configuración.
+
 * 0.3.0
     * Se elimina el icono de Systray, por la incompatibilidad con Gnome3 y utilizamos ControlsFX para monstrar las 
     notificaciones.
