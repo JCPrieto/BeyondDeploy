@@ -18,9 +18,9 @@ public class BeyondDeploy {
 
     public static void main(String[] args) {
         Logger.eliminarLogsVacios();
-        final JFXPanel fxPanel = new JFXPanel();
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            final JFXPanel fxPanel = new JFXPanel();
             Configuracion configuracion = UtilidadesConfiguracion.loadConfig();
             if (configuracion == null) {
                 configuracion = new Configuracion();

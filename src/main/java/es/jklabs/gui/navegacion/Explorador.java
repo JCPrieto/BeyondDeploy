@@ -127,6 +127,10 @@ public class Explorador extends JPanel {
         String icono;
         if (esArchivoComprimido(s3File.getName())) {
             icono = "img/icons/compress.png";
+        } else if (esArchivoExcel(s3File.getName())) {
+            icono = "img/icons/excel.png";
+        } else if (esArchivoXML(s3File.getName())) {
+            icono = "img/icons/xml.png";
         } else {
             icono = "img/icons/file.png";
         }
@@ -138,8 +142,16 @@ public class Explorador extends JPanel {
         jpMenu.add(jLabel);
     }
 
+    private boolean esArchivoXML(String name) {
+        return name.endsWith(".html") || name.endsWith(".xhtml") || name.endsWith(".xml");
+    }
+
+    private boolean esArchivoExcel(String name) {
+        return name.endsWith(".xls") || name.endsWith(".xlsx") || name.endsWith(".csv");
+    }
+
     private boolean esArchivoComprimido(String name) {
-        return name.endsWith(".war") || name.endsWith(".zip") || name.endsWith(".rar");
+        return name.endsWith(".war") || name.endsWith(".zip") || name.endsWith(".rar") || name.endsWith(".tar.gz");
     }
 
     private void addCarpeta(S3Folder s3Folder) {

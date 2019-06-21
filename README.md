@@ -29,6 +29,9 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.4.0
+    * Subida de versión de las librerías de apoyo.
+
 * 0.3.1
     * Correccón de error al tratar los archivos json de configuración.
 
