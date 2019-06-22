@@ -6,7 +6,6 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 * Java 11
 * LibNotify (Para las notificaciones en Linux)
-* libjava-gnome-java (Opcional y solo para Linux)
 
 ### Ejecución ###
 
