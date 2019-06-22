@@ -10,8 +10,6 @@ import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
@@ -20,7 +18,6 @@ public class Logger {
 
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(Logger.class.getName());
     private static Logger logger;
-    private static ResourceBundle errores = ResourceBundle.getBundle("i18n/errores", Locale.getDefault());
     private static final String ARCHIVO = "log_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
 
     private Logger() {
@@ -55,7 +52,7 @@ public class Logger {
                 Files.delete(file.toPath());
             }
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, errores.getString("lectura.logs"), e);
+            LOG.log(Level.SEVERE, Mensajes.getError("lectura.logs"), e);
         }
     }
 
@@ -66,19 +63,11 @@ public class Logger {
     }
 
     public static void error(String mensaje, Exception e) {
-        if (errores.containsKey(mensaje)) {
-            LOG.log(Level.SEVERE, errores.getString(mensaje), e);
-        } else {
-            LOG.log(Level.SEVERE, mensaje, e);
-        }
+        LOG.log(Level.SEVERE, Mensajes.getError(mensaje), e);
     }
 
     static void info(String mensaje, Exception e) {
-        if (errores.containsKey(mensaje)) {
-            LOG.log(Level.INFO, errores.getString(mensaje), e);
-        } else {
-            LOG.log(Level.INFO, mensaje, e);
-        }
+        LOG.log(Level.INFO, Mensajes.getError(mensaje), e);
     }
 
     static void info(String mensaje) {
