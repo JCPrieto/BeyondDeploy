@@ -8,25 +8,18 @@ import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.filter.JSonFilter;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.s3.model.S3Folder;
-import es.jklabs.utilidades.Constantes;
-import es.jklabs.utilidades.Logger;
-import es.jklabs.utilidades.UtilidadesConfiguracion;
-import es.jklabs.utilidades.UtilidadesFirebase;
+import es.jklabs.utilidades.*;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.ResourceBundle;
 
 public class MainUI extends JFrame {
 
     private static final long serialVersionUID = 7929656351162697237L;
-    private static ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
-    private static final Logger LOG = Logger.getLogger();
     private Configuracion configuracion;
     private JPanel panelCentral;
     private S3Folder raiz;
@@ -73,15 +66,15 @@ public class MainUI extends JFrame {
 
     private void cargarMenu() {
         JMenuBar menu = new JMenuBar();
-        JMenu jmArchivo = new JMenu(mensajes.getString("archivo"));
+        JMenu jmArchivo = new JMenu(Mensajes.getMensaje("archivo"));
         jmArchivo.setMargin(new Insets(5, 5, 5, 5));
-        JMenuItem jmiConfiguracion = new JMenuItem(mensajes.getString("configuracion"), new ImageIcon(Objects
+        JMenuItem jmiConfiguracion = new JMenuItem(Mensajes.getMensaje("configuracion"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/settings.png"))));
         jmiConfiguracion.addActionListener(al -> abrirConfiguracion());
-        JMenuItem jmiExportar = new JMenuItem(mensajes.getString("exportar.configuracion"), new ImageIcon(Objects
+        JMenuItem jmiExportar = new JMenuItem(Mensajes.getMensaje("exportar.configuracion"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/download.png"))));
         jmiExportar.addActionListener(al -> exportarConfiguracion());
-        JMenuItem jmiImportar = new JMenuItem(mensajes.getString("importar.configuracion"), new ImageIcon(Objects
+        JMenuItem jmiImportar = new JMenuItem(Mensajes.getMensaje("importar.configuracion"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/upload.png"))));
         jmiImportar.addActionListener(al -> importarConfiguracion());
         jmArchivo.add(jmiConfiguracion);
@@ -89,7 +82,7 @@ public class MainUI extends JFrame {
         jmArchivo.add(jmiImportar);
         JMenu jmAyuda = new JMenu("Ayuda");
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
-        JMenuItem jmiAcercaDe = new JMenuItem(mensajes.getString("acerca.de"), new ImageIcon(Objects
+        JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/info.png"))));
         jmiAcercaDe.addActionListener(al -> mostrarAcercaDe());
         jmAyuda.add(jmiAcercaDe);
@@ -98,7 +91,7 @@ public class MainUI extends JFrame {
         try {
             if (UtilidadesFirebase.existeNuevaVersion()) {
                 menu.add(Box.createHorizontalGlue());
-                JMenuItem jmActualizacion = new JMenuItem(mensajes.getString("existe.nueva.version"), new ImageIcon
+                JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"), new ImageIcon
                         (Objects.requireNonNull(getClass().getClassLoader().getResource("img/icons/update.png"))));
                 jmActualizacion.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
                 jmActualizacion.setHorizontalTextPosition(SwingConstants.RIGHT);
@@ -106,7 +99,7 @@ public class MainUI extends JFrame {
                 menu.add(jmActualizacion);
             }
         } catch (IOException | InterruptedException e) {
-            LOG.error("consultar.nueva.version", e);
+            Logger.error("consultar.nueva.version", e);
         }
         super.setJMenuBar(menu);
     }

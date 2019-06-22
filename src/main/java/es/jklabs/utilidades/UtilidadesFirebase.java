@@ -24,7 +24,6 @@ import java.util.concurrent.CountDownLatch;
 public class UtilidadesFirebase {
 
     private static final String REFERENCE = "aplicaciones/BeyondDeploy";
-    private static final Logger LOG = Logger.getLogger();
 
     private UtilidadesFirebase() {
 
@@ -57,7 +56,7 @@ public class UtilidadesFirebase {
 
             @Override
             public void onCancelled(DatabaseError error) {
-                LOG.info(error.getMessage());
+                Logger.info(error.getMessage());
                 latch.countDown();
             }
         });
@@ -95,13 +94,13 @@ public class UtilidadesFirebase {
                     actualizarNumDescargas();
                     Growls.mostrarInfo("nueva.version.descargada");
                 } else {
-                    LOG.info("Error de lectura de la BBDD");
+                    Logger.info("Error de lectura de la BBDD");
                 }
             } catch (AccessDeniedException e) {
                 Growls.mostrarError("path.sin.permiso.escritura", e);
                 descargaNuevaVersion(ventana);
             } catch (IOException e) {
-                LOG.error("descargar.nueva.version", e);
+                Logger.error("descargar.nueva.version", e);
             }
         }
     }

@@ -3,7 +3,6 @@ package es.jklabs.gui.utilidades;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.Mensajes;
-import org.gnome.notify.Notification;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,10 +11,8 @@ import java.util.Objects;
 
 public class Growls {
 
-    private static final Logger LOG = Logger.getLogger();
     private static final String NOTIFY_SEND = "notify-send";
     private static TrayIcon trayIcon;
-    private static boolean gtk;
 
     private Growls(){
 
@@ -29,17 +26,13 @@ public class Growls {
         if (trayIcon != null) {
             trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getMensaje(cuerpo), TrayIcon.MessageType.INFO);
         } else {
-            if (gtk) {
-                new Notification(titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP, Mensajes.getMensaje(cuerpo), "dialog-information").show();
-            } else {
-                try {
-                    Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
-                            titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                            Mensajes.getMensaje(cuerpo),
-                            "--icon=dialog-information"});
-                } catch (IOException e) {
-                    LOG.error(e);
-                }
+            try {
+                Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
+                        titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
+                        Mensajes.getMensaje(cuerpo),
+                        "--icon=dialog-information"});
+            } catch (IOException e) {
+                Logger.error(e);
             }
         }
     }
@@ -48,37 +41,29 @@ public class Growls {
         if (trayIcon != null) {
             trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getError(cuerpo), TrayIcon.MessageType.ERROR);
         } else {
-            if (gtk) {
-                new Notification(titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP, Mensajes.getError(cuerpo), "dialog-error").show();
-            } else {
-                try {
-                    Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
-                            titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                            Mensajes.getError(cuerpo),
-                            "--icon=dialog-error"});
-                } catch (IOException e2) {
-                    LOG.error(e2);
-                }
+            try {
+                Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
+                        titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
+                        Mensajes.getError(cuerpo),
+                        "--icon=dialog-error"});
+            } catch (IOException e2) {
+                Logger.error(e2);
             }
         }
-        LOG.error(cuerpo, e);
+        Logger.error(cuerpo, e);
     }
 
     public static void mostrarAviso(String titulo, String cuerpo) {
         if (trayIcon != null) {
             trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getError(cuerpo), TrayIcon.MessageType.WARNING);
         } else {
-            if (gtk) {
-                new Notification(titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP, Mensajes.getError(cuerpo), "dialog-warning").show();
-            } else {
-                try {
-                    Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
-                            titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                            Mensajes.getError(cuerpo),
-                            "--icon=dialog-warning"});
-                } catch (IOException e) {
-                    LOG.error(e);
-                }
+            try {
+                Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
+                        titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
+                        Mensajes.getError(cuerpo),
+                        "--icon=dialog-warning"});
+            } catch (IOException e) {
+                Logger.error(e);
             }
         }
     }
@@ -87,8 +72,7 @@ public class Growls {
         mostrarInfo(null, cuerpo);
     }
 
-    public static void init(boolean isGtk) {
-        gtk = isGtk;
+    public static void init() {
         trayIcon = null;
         if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
             SystemTray tray = SystemTray.getSystemTray();
@@ -98,7 +82,7 @@ public class Growls {
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
-                LOG.error("establecer.icono.systray", e);
+                Logger.error("establecer.icono.systray", e);
             }
         }
     }

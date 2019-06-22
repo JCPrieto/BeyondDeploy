@@ -25,13 +25,15 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     * AWS Amazon S3 https://aws.amazon.com/sdkforjava
     * Apache Commons Lang http://commons.apache.org/proper/commons-lang
     * Apache Commons IO http://commons.apache.org/proper/commons-io
-    * Java-Gnome http://java-gnome.sourceforge.net/
     
 ### ToDo ###
 
 * Integración con EC2 para crear, parar o reiniciar maquinas, así como ejecutar sentencias de comando via SSH.
 
 ### Changelog ###
+
+* 0.5.0
+    * Eliminamos dependencia de Java-Gnome por innecesaria
 
 * 0.4.1
     * Añadimos compatibilidad con entornos de escritorios Linux no GTK.

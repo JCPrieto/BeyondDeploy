@@ -37,13 +37,6 @@ public class Logger {
         }
     }
 
-    public static Logger getLogger() {
-        if (logger == null) {
-            logger = new Logger();
-        }
-        return logger;
-    }
-
     public static void eliminarLogsVacios() {
         File carpeta = new File(System.getProperty("user.dir"));
         File[] lista = carpeta.listFiles();
@@ -66,7 +59,13 @@ public class Logger {
         }
     }
 
-    public void error(String mensaje, Exception e) {
+    public static void init() {
+        if (logger == null) {
+            logger = new Logger();
+        }
+    }
+
+    public static void error(String mensaje, Exception e) {
         if (errores.containsKey(mensaje)) {
             LOG.log(Level.SEVERE, errores.getString(mensaje), e);
         } else {
@@ -74,7 +73,7 @@ public class Logger {
         }
     }
 
-    void info(String mensaje, Exception e) {
+    static void info(String mensaje, Exception e) {
         if (errores.containsKey(mensaje)) {
             LOG.log(Level.INFO, errores.getString(mensaje), e);
         } else {
@@ -82,11 +81,11 @@ public class Logger {
         }
     }
 
-    void info(String mensaje) {
+    static void info(String mensaje) {
         LOG.log(Level.INFO, mensaje);
     }
 
-    public void error(Exception e) {
+    public static void error(Exception e) {
         LOG.log(Level.SEVERE, null, e);
     }
 }

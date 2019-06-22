@@ -14,7 +14,6 @@ import java.nio.file.Files;
 public class UtilidadesConfiguracion {
 
     private static final String CONFIG_JSON = "config.json";
-    private static final Logger LOG = Logger.getLogger();
 
     private UtilidadesConfiguracion() {
 
@@ -29,7 +28,7 @@ public class UtilidadesConfiguracion {
                         UtilidadesFichero.SEPARADOR + UtilidadesFichero.BEYOND_DEPLOY_FOLDER + UtilidadesFichero
                         .SEPARADOR + CONFIG_JSON));
             } catch (IOException e) {
-                LOG.error("Mover archivo de configuracion", e);
+                Logger.error("Mover archivo de configuracion", e);
             }
         }
         return loadConfig(new File(UtilidadesFichero.HOME + UtilidadesFichero.SEPARADOR +
@@ -48,7 +47,7 @@ public class UtilidadesConfiguracion {
             UtilidadesFichero.createBaseFolder();
             mapper.writeValue(file, configuracion);
         } catch (IOException e) {
-            LOG.error("Guardar configuracion", e);
+            Logger.error("Guardar configuracion", e);
         }
     }
 
@@ -59,9 +58,9 @@ public class UtilidadesConfiguracion {
             configuracion = mapper.readValue(file, Configuracion.class);
             guardarConfiguracion(configuracion);
         } catch (FileNotFoundException e) {
-            LOG.info("Fichero de configuracion no encontrado", e);
+            Logger.info("Fichero de configuracion no encontrado", e);
         } catch (IOException e) {
-            LOG.error("Error de lectura del fichero de configuracion", e);
+            Logger.error("Error de lectura del fichero de configuracion", e);
         }
         return configuracion;
     }
