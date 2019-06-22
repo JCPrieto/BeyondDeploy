@@ -102,7 +102,7 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, yPosition++, "AWS Amazon S3", "https://aws.amazon.com/sdkforjava");
         addPowered(panel, cns, yPosition++, "Apache Commons Lang", "http://commons.apache.org/proper/commons-lang");
         addPowered(panel, cns, yPosition++, "Apache Commons IO", "http://commons.apache.org/proper/commons-io");
-        addPowered(panel, cns, yPosition++, "ControlsFX", "http://fxexperience.com/controlsfx");
+        addPowered(panel, cns, yPosition++, "Java-Gnome", "http://java-gnome.sourceforge.net/");
         JLabel jLabelLicense = new JLabel
                 ("<html><i>Esta obra está bajo una licencia de Creative Commons " +
                         "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>", new ImageIcon(Objects

@@ -3,12 +3,16 @@ package es.jklabs.gui.utilidades;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.Mensajes;
-import javafx.application.Platform;
-import org.controlsfx.control.Notifications;
+import org.gnome.notify.Notification;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Objects;
 
 public class Growls {
 
     private static final Logger LOG = Logger.getLogger();
+    private static TrayIcon trayIcon;
 
     private Growls(){
 
@@ -18,31 +22,47 @@ public class Growls {
         mostrarError(null, cuerpo, e);
     }
 
-    public static void mostrarInfo(String titulo, String cuerpo) {
-        Platform.runLater(() -> getGrowl(titulo, Mensajes.getMensaje(cuerpo))
-                .showInformation());
+    private static void mostrarInfo(String titulo, String cuerpo) {
+        if (trayIcon != null) {
+            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getMensaje(cuerpo), TrayIcon.MessageType.INFO);
+        } else {
+            new Notification(titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP, Mensajes.getMensaje(cuerpo), "dialog-information").show();
+        }
     }
 
     public static void mostrarError(String titulo, String cuerpo, Exception e) {
-        Platform.runLater(() -> getGrowl(titulo, Mensajes.getError(cuerpo))
-                .showError());
+        if (trayIcon != null) {
+            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getError(cuerpo), TrayIcon.MessageType.ERROR);
+        } else {
+            new Notification(titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP, Mensajes.getError(cuerpo), "dialog-error").show();
+        }
         LOG.error(cuerpo, e);
     }
 
     public static void mostrarAviso(String titulo, String cuerpo) {
-        Platform.runLater(() -> getGrowl(titulo, Mensajes.getError(cuerpo))
-                .showWarning());
+        if (trayIcon != null) {
+            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getError(cuerpo), TrayIcon.MessageType.WARNING);
+        } else {
+            new Notification(titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP, Mensajes.getError(cuerpo), "dialog-warning").show();
+        }
     }
 
     public static void mostrarInfo(String cuerpo) {
         mostrarInfo(null, cuerpo);
     }
 
-    private static Notifications getGrowl(String titulo, String cuerpo) {
-        return Notifications.create()
-                .darkStyle()
-                .title(titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP)
-                .text(cuerpo);
+    public static void init() {
+        trayIcon = null;
+        if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
+            SystemTray tray = SystemTray.getSystemTray();
+            trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(Growls.class.getClassLoader().getResource
+                    ("img/icons/s3-bucket.png"))).getImage(), Constantes.NOMBRE_APP);
+            trayIcon.setImageAutoSize(true);
+            try {
+                tray.add(trayIcon);
+            } catch (AWTException e) {
+                LOG.error("establecer.icono.systray", e);
+            }
+        }
     }
-
 }

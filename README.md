@@ -4,7 +4,8 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Requisitos ###
 
-* Java 1.8
+* Java 11
+* LibNotify (Para las notificaciones en Linux)
 
 ### Ejecución ###
 
@@ -23,14 +24,19 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     * AWS Amazon S3 https://aws.amazon.com/sdkforjava
     * Apache Commons Lang http://commons.apache.org/proper/commons-lang
     * Apache Commons IO http://commons.apache.org/proper/commons-io
-    * ControlsFX http://fxexperience.com/controlsfx
+    * Java-Gnome http://java-gnome.sourceforge.net/
     
 ### ToDo ###
+
+* Integración con EC2 para crear, parar o reiniciar maquinas, así como ejecutar sentencias de comando via SSH.
 
 ### Changelog ###
 
 * 0.4.0
-    * Subida de versión de las librerías de apoyo.
+    * A partir de ahora es necesario Java 11.
+    * Eliminamos ControlFX por problemas de compatibilidad con OpenJDK 11 y en su lugar utilizamos Systray en S.O Windows
+    (sin testear, por lo que es posible que pueda fallar) y Java-Gnome en S.O Linux (No es necesario que el entrono de
+    escritorio sea Gnome, con tener libNotify instalado en el sistema, debe funcionar).    
 
 * 0.3.1
     * Correccón de error al tratar los archivos json de configuración.

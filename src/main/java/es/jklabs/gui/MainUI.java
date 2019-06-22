@@ -12,7 +12,6 @@ import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesFirebase;
-import javafx.embed.swing.JFXPanel;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
@@ -32,9 +31,8 @@ public class MainUI extends JFrame {
     private JPanel panelCentral;
     private S3Folder raiz;
 
-    public MainUI(JFXPanel fxPanel, Configuracion configuracion) {
+    public MainUI(Configuracion configuracion) {
         this();
-        add(fxPanel);
         this.configuracion = configuracion;
         cargarPantallaPrincipal();
         super.pack();
