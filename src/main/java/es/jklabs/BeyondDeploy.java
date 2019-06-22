@@ -17,12 +17,16 @@ public class BeyondDeploy {
     private static final Logger LOG = Logger.getLogger();
 
     public static void main(String[] args) {
-        Gtk.init(args);
+        try {
+            Gtk.init(args);
+            Notify.init(Constantes.NOMBRE_APP);
+            Growls.init(true);
+        } catch (Exception | UnsatisfiedLinkError e) {
+            Growls.init(false);
+        }
         Logger.eliminarLogsVacios();
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            Notify.init(Constantes.NOMBRE_APP);
-            Growls.init();
             Configuracion configuracion = UtilidadesConfiguracion.loadConfig();
             if (configuracion == null) {
                 configuracion = new Configuracion();

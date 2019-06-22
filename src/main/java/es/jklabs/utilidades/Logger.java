@@ -85,4 +85,8 @@ public class Logger {
     void info(String mensaje) {
         LOG.log(Level.INFO, mensaje);
     }
+
+    public void error(Exception e) {
+        LOG.log(Level.SEVERE, null, e);
+    }
 }
