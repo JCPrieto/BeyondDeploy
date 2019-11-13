@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.9'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.10'
     compile group: 'com.google.firebase', name: 'firebase-admin', version: '6.8.1'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.577'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'

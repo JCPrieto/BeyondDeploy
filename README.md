@@ -27,13 +27,14 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     
 ### ToDo ###
 
+* Notificaciones en KDE
 * Hacer configurables la posibilidad de dar permisos a otras cuentas
 * Integración con EC2 para crear, parar o reiniciar maquinas, así como ejecutar sentencias de comando via SSH.
 
 ### Changelog ###
 
 * 0.5.1
-    * Damos acceso a la cuenta de Chile para leer ficheros del bucket
+    * Actualización de seguridad de la librería de Jackson
 
 * 0.5.0
     * Eliminamos dependencia de Java-Gnome por innecesaria

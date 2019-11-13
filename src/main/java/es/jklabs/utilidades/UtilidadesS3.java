@@ -72,10 +72,6 @@ public class UtilidadesS3 {
         AmazonS3 s3 = getAmazonS3(bucketConfig);
         PutObjectRequest request = new PutObjectRequest(bucketConfig.getBucketName(), fullpath + file.getName(), file);
         s3.putObject(request);
-        AccessControlList acl = s3.getObjectAcl(bucketConfig.getBucketName(), fullpath + file.getName());
-        acl.grantPermission(new CanonicalGrantee("c4c0cc6c717101d2741676047b8eb3d2c7b08813c59797be0a1afadc6df42c89"),
-                Permission.Read);
-        s3.setObjectAcl(bucketConfig.getBucketName(), fullpath + file.getName(), acl);
     }
 
     public static ObjectListing getObjetos(BucketConfig bucketConfig, String fullpath) {
