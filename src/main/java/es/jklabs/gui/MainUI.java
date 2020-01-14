@@ -98,8 +98,11 @@ public class MainUI extends JFrame {
                 jmActualizacion.addActionListener(al -> descargarNuevaVersion());
                 menu.add(jmActualizacion);
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             Logger.error("consultar.nueva.version", e);
+        } catch (InterruptedException e) {
+            Logger.error("consultar.nueva.version", e);
+            Thread.currentThread().interrupt();
         }
         super.setJMenuBar(menu);
     }

@@ -60,8 +60,11 @@ public class UtilidadesS3 {
                 }
                 in.close();
                 Growls.mostrarInfo("archivo.descargado.correctamente");
-            } catch (InterruptedException | IOException e) {
+            } catch (IOException e) {
                 Growls.mostrarError("descargar.archivo", e);
+            } catch (InterruptedException e) {
+                Growls.mostrarError("descargar.archivo", e);
+                Thread.currentThread().interrupt();
             } finally {
                 ventana.setCursor(null);
             }
