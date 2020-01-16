@@ -42,6 +42,7 @@ public class S3FileListener implements MouseListener {
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        //
     }
 
     @Override
