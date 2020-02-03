@@ -33,6 +33,10 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.6.0
+
+    * Darles permisos a otras cuentas AWS para que tengan acceso a los archivos que subimos.
+
 * 0.5.3
 
     * Correciones de seguridad.
