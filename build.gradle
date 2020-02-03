@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'es.jklabs.desktop'
-version '0.5.3'
+version '0.5.4'
 
 mainClassName = "es.jklabs.BeyondDeploy"
 

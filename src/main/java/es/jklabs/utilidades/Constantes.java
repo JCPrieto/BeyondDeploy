@@ -4,7 +4,7 @@ public class Constantes {
 
     public static final String NOMBRE_APP = "BeyondDeploy";
     static final String STORAGE_BUCKET = "curriculum-a2a80.appspot.com";
-    public static final String VERSION = "0.5.3";
+    public static final String VERSION = "0.5.4";
 
     private Constantes() {
 

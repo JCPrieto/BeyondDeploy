@@ -33,6 +33,10 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.5.4
+
+    * Correciones de seguridad y estabilidad
+
 * 0.5.3
 
     * Correciones de seguridad.
