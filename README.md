@@ -35,7 +35,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 * 0.6.0
 
-    * Darles permisos a otras cuentas AWS para que tengan acceso a los archivos que subimos.
+    * Se permite dar permisos a otras cuentas AWS para que tengan acceso a los archivos que subimos al bucket.
 
 * 0.5.3
 

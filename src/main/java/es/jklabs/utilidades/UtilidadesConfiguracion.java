@@ -3,6 +3,7 @@ package es.jklabs.utilidades;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import es.jklabs.json.configuracion.CannonicalId;
 import es.jklabs.json.configuracion.Configuracion;
 
 import java.io.File;
@@ -10,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Objects;
 
 public class UtilidadesConfiguracion {
 
@@ -56,7 +59,14 @@ public class UtilidadesConfiguracion {
         Configuracion configuracion = null;
         try {
             configuracion = mapper.readValue(file, Configuracion.class);
-            guardarConfiguracion(configuracion);
+            if (configuracion.getCannonicalIds() == null &&
+                    Objects.equals(configuracion.getBucketConfig().getBucketName(), Mensajes.getMensaje("nombre.bucket.beyondup"))) {
+                configuracion.setCannonicalIds(new ArrayList<>());
+                CannonicalId chile = new CannonicalId(Mensajes.getMensaje("chile"), Constantes.CANNONICAL_ID_CHILE);
+                CannonicalId argentina = new CannonicalId(Mensajes.getMensaje("argentina"), Constantes.CANNONICAL_ID_ARGENTINA);
+                configuracion.getCannonicalIds().add(chile);
+                configuracion.getCannonicalIds().add(argentina);
+            }
         } catch (FileNotFoundException e) {
             Logger.info("Fichero de configuracion no encontrado", e);
         } catch (IOException e) {

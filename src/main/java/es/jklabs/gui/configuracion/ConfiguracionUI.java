@@ -3,7 +3,9 @@ package es.jklabs.gui.configuracion;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.BucketConfig;
+import es.jklabs.json.configuracion.CannonicalId;
 import es.jklabs.json.configuracion.Configuracion;
+import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesEncryptacion;
 import es.jklabs.utilidades.UtilidadesString;
@@ -11,6 +13,8 @@ import es.jklabs.utilidades.UtilidadesString;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -34,9 +38,39 @@ public class ConfiguracionUI extends JDialog {
 
     private void cargarPantalla() {
         this.setLayout(new BorderLayout());
+        this.add(cargarPanelNorte(), BorderLayout.NORTH);
         this.add(cargarPanelCentral(), BorderLayout.CENTER);
         this.add(cargarBotonera(), BorderLayout.SOUTH);
         this.pack();
+    }
+
+    private JPanel cargarPanelCentral() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(cargarBotonesTabla(), BorderLayout.NORTH);
+        panel.add(cargarTabla(), BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JScrollPane cargarTabla() {
+        String[] columnas = {Mensajes.getMensaje("nombre.cuenta"), Mensajes.getMensaje("cannonical.id")};
+        Object[][] data = getDataTable(configuracion.getCannonicalIds());
+        JTable tabla = new JTable(data, columnas);
+        tabla.setFillsViewportHeight(true);
+        return new JScrollPane(tabla);
+    }
+
+    private Object[][] getDataTable(List<CannonicalId> cannonicalIds) {
+        Object[][] data = new Object[cannonicalIds.size()][2];
+        for (int i = 0; i < cannonicalIds.size(); i++) {
+            data[i][0] = cannonicalIds.get(i).getNombre();
+            data[i][1] = cannonicalIds.get(i).getId();
+        }
+        return data;
+    }
+
+    private JPanel cargarBotonesTabla() {
+        return new JPanel();
     }
 
     private JPanel cargarBotonera() {
@@ -61,10 +95,14 @@ public class ConfiguracionUI extends JDialog {
         if (configuracion.getBucketConfig() == null) {
             configuracion.setBucketConfig(new BucketConfig());
         }
+        if (configuracion.getCannonicalIds() == null) {
+            configuracion.setCannonicalIds(new ArrayList<>());
+        }
         configuracion.getBucketConfig().setBucketName(txBucketName.getText());
         configuracion.getBucketConfig().setAccesKey(txAccesKey.getText());
         configuracion.getBucketConfig().setSecretKey(UtilidadesEncryptacion.encrypt(String.valueOf(txSecretKey
                 .getPassword())));
+        //ToDo Almacenar datos de la tabla en la configuracion
         UtilidadesConfiguracion.guardarConfiguracion(configuracion);
         padre.actualizarPanelCentral();
     }
@@ -86,7 +124,7 @@ public class ConfiguracionUI extends JDialog {
         return valido;
     }
 
-    private JPanel cargarPanelCentral() {
+    private JPanel cargarPanelNorte() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         GridBagConstraints c = new GridBagConstraints();

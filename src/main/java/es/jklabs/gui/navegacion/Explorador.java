@@ -93,12 +93,16 @@ public class Explorador extends JPanel {
         }
         folder.getS3Forlders().clear();
         folder.getS3Files().clear();
-        ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), folder
-                .getFullpath());
-        UtilidadesS3.actualizarCarpeta(folder, elementos);
-        cargarPanelCentral();
-        if (padre.getPanelCentral() != null) {
-            SwingUtilities.invokeLater(() -> SwingUtilities.updateComponentTreeUI(padre.getPanelCentral()));
+        try {
+            ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), folder
+                    .getFullpath());
+            UtilidadesS3.actualizarCarpeta(folder, elementos);
+            cargarPanelCentral();
+            if (padre.getPanelCentral() != null) {
+                SwingUtilities.invokeLater(() -> SwingUtilities.updateComponentTreeUI(padre.getPanelCentral()));
+            }
+        } catch (Exception e) {
+            Growls.mostrarError("cargar.archivos.bucket", e);
         }
         padre.setCursor(null);
     }
