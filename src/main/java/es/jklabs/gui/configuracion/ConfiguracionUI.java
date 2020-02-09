@@ -5,6 +5,7 @@ import es.jklabs.gui.configuracion.table.model.CannonicalTableModel;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.BucketConfig;
 import es.jklabs.json.configuracion.Configuracion;
+import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesEncryptacion;
 import es.jklabs.utilidades.UtilidadesString;
@@ -26,6 +27,8 @@ public class ConfiguracionUI extends JDialog {
     private JTextField txBucketName;
     private JTextField txAccesKey;
     private JPasswordField txSecretKey;
+    private JTable tbCannonicalId;
+    private CannonicalTableModel tmCannonicalId;
 
     public ConfiguracionUI(MainUI mainUI, Configuracion configuracion) {
         super(mainUI, mensajes.getString("configuracion"), true);
@@ -52,17 +55,50 @@ public class ConfiguracionUI extends JDialog {
     }
 
     private JScrollPane cargarTabla() {
-        JTable tabla = new JTable();
-        tabla.setModel(new CannonicalTableModel(configuracion.getCannonicalIds()));
-        tabla.setFillsViewportHeight(true);
-        tabla.setAutoCreateRowSorter(true);
-        tabla.getColumnModel().getColumn(0).setPreferredWidth(150);
-        tabla.getColumnModel().getColumn(1).setPreferredWidth(450);
-        return new JScrollPane(tabla);
+        tbCannonicalId = new JTable();
+        tmCannonicalId = new CannonicalTableModel(configuracion.getCannonicalIds());
+        tbCannonicalId.setModel(tmCannonicalId);
+        tbCannonicalId.setFillsViewportHeight(true);
+        tbCannonicalId.setAutoCreateRowSorter(true);
+        tbCannonicalId.getColumnModel().getColumn(0).setPreferredWidth(150);
+        tbCannonicalId.getColumnModel().getColumn(1).setPreferredWidth(450);
+        return new JScrollPane(tbCannonicalId);
     }
 
     private JPanel cargarBotonesTabla() {
-        return new JPanel();
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(1, 0, 10, 10));
+        JButton btnAddCannonical = new JButton("Add"); //ToDo
+        btnAddCannonical.addActionListener(l -> addCannonicalId());
+        JButton btnEditCannonical = new JButton("Edit"); //ToDo
+        btnEditCannonical.addActionListener(l -> editCannonicalId());
+        JButton btnRemoveCannonical = new JButton("Delete"); //ToDo
+        btnRemoveCannonical.addActionListener(l -> removeCannonicalId());
+        panel.add(btnAddCannonical);
+        panel.add(btnEditCannonical);
+        panel.add(btnRemoveCannonical);
+        return panel;
+    }
+
+    private void removeCannonicalId() {
+        if (tbCannonicalId.getSelectedRow() > -1) {
+            tmCannonicalId.removeRow(tbCannonicalId.convertRowIndexToModel(tbCannonicalId.getSelectedRow()));
+            tbCannonicalId.clearSelection();
+        } else {
+            Growls.mostrarInfo(Mensajes.getError("elemento.seleccionado"));
+        }
+    }
+
+    private void editCannonicalId() {
+        if (tbCannonicalId.getSelectedRow() > -1) {
+            //ToDo
+        } else {
+            Growls.mostrarInfo(Mensajes.getError("elemento.seleccionado"));
+        }
+    }
+
+    private void addCannonicalId() {
+        //ToDO
     }
 
     private JPanel cargarBotonera() {
