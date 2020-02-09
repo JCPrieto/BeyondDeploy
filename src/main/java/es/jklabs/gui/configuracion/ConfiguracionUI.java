@@ -33,6 +33,7 @@ public class ConfiguracionUI extends JDialog {
         super(mainUI, mensajes.getString("configuracion"), true);
         this.padre = mainUI;
         this.configuracion = configuracion;
+        setPreferredSize(new Dimension(600, 350));
         cargarPantalla();
     }
 
@@ -57,6 +58,8 @@ public class ConfiguracionUI extends JDialog {
         Object[][] data = getDataTable(configuracion.getCannonicalIds());
         JTable tabla = new JTable(data, columnas);
         tabla.setFillsViewportHeight(true);
+        tabla.getColumnModel().getColumn(0).setPreferredWidth(150);
+        tabla.getColumnModel().getColumn(1).setPreferredWidth(450);
         return new JScrollPane(tabla);
     }
 
@@ -137,7 +140,7 @@ public class ConfiguracionUI extends JDialog {
         c.anchor = GridBagConstraints.LINE_START;
         panel.add(lbBucketName, c);
         txBucketName = new JTextField();
-        txBucketName.setColumns(10);
+        txBucketName.setColumns(15);
         c.gridx = 1;
         c.gridy = 0;
         panel.add(txBucketName, c);
@@ -146,7 +149,7 @@ public class ConfiguracionUI extends JDialog {
         c.gridy = 1;
         panel.add(lbAccesKey, c);
         txAccesKey = new JTextField();
-        txAccesKey.setColumns(10);
+        txAccesKey.setColumns(15);
         c.gridx = 1;
         c.gridy = 1;
         panel.add(txAccesKey, c);
@@ -155,7 +158,7 @@ public class ConfiguracionUI extends JDialog {
         c.gridy = 5;
         panel.add(lbSecretKey, c);
         txSecretKey = new JPasswordField();
-        txSecretKey.setColumns(10);
+        txSecretKey.setColumns(15);
         c.gridx = 1;
         c.gridy = 5;
         panel.add(txSecretKey, c);
