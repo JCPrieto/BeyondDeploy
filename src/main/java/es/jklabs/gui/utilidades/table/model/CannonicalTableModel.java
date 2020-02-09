@@ -1,4 +1,4 @@
-package es.jklabs.gui.configuracion.table.model;
+package es.jklabs.gui.utilidades.table.model;
 
 import es.jklabs.json.configuracion.CannonicalId;
 import es.jklabs.utilidades.Mensajes;

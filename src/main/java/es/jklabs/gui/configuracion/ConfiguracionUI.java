@@ -1,8 +1,8 @@
 package es.jklabs.gui.configuracion;
 
 import es.jklabs.gui.MainUI;
-import es.jklabs.gui.configuracion.table.model.CannonicalTableModel;
 import es.jklabs.gui.utilidades.Growls;
+import es.jklabs.gui.utilidades.table.model.CannonicalTableModel;
 import es.jklabs.json.configuracion.BucketConfig;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.utilidades.Mensajes;
@@ -91,14 +91,19 @@ public class ConfiguracionUI extends JDialog {
 
     private void editCannonicalId() {
         if (tbCannonicalId.getSelectedRow() > -1) {
-            //ToDo
+            mostrarDialogoCannonicalId(true);
         } else {
             Growls.mostrarInfo(Mensajes.getError("elemento.seleccionado"));
         }
     }
 
+    private void mostrarDialogoCannonicalId(boolean edit) {
+        CannonicalIdUI cannonicalIdUI = new CannonicalIdUI(this, edit);
+        cannonicalIdUI.setVisible(true);
+    }
+
     private void addCannonicalId() {
-        //ToDO
+        mostrarDialogoCannonicalId(false);
     }
 
     private JPanel cargarBotonera() {
@@ -197,5 +202,13 @@ public class ConfiguracionUI extends JDialog {
             txAccesKey.setText(configuracion.getBucketConfig().getAccesKey());
             txSecretKey.setText(UtilidadesEncryptacion.decrypt(configuracion.getBucketConfig().getSecretKey()));
         }
+    }
+
+    public JTable getTbCannonicalId() {
+        return tbCannonicalId;
+    }
+
+    public CannonicalTableModel getTmCannonicalId() {
+        return tmCannonicalId;
     }
 }
