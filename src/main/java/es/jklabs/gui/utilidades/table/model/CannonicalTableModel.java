@@ -15,13 +15,17 @@ public class CannonicalTableModel extends DefaultTableModel implements TableMode
     public CannonicalTableModel(List<CannonicalId> cannonicalIds) {
         super();
         String[] columnas = {Mensajes.getMensaje("nombre.cuenta"), Mensajes.getMensaje("cannonical.id")};
-        cannonicalIds.sort(Comparator.comparing(CannonicalId::getNombre));
-        Object[][] data = new Object[cannonicalIds.size()][2];
-        for (int i = 0; i < cannonicalIds.size(); i++) {
-            data[i][0] = cannonicalIds.get(i).getNombre();
-            data[i][1] = cannonicalIds.get(i).getId();
+        if (cannonicalIds != null) {
+            cannonicalIds.sort(Comparator.comparing(CannonicalId::getNombre));
+            Object[][] data = new Object[cannonicalIds.size()][2];
+            for (int i = 0; i < cannonicalIds.size(); i++) {
+                data[i][0] = cannonicalIds.get(i).getNombre();
+                data[i][1] = cannonicalIds.get(i).getId();
+            }
+            super.setDataVector(data, columnas);
+        } else {
+            super.setDataVector(new Object[0][], columnas);
         }
-        super.setDataVector(data, columnas);
     }
 
     @Override
