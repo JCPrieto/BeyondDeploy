@@ -2,6 +2,7 @@ package es.jklabs.gui.configuracion;
 
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
+import es.jklabs.gui.utilidades.UtilidadesImagenes;
 import es.jklabs.gui.utilidades.table.model.CannonicalTableModel;
 import es.jklabs.json.configuracion.BucketConfig;
 import es.jklabs.json.configuracion.CannonicalId;
@@ -69,12 +70,18 @@ public class ConfiguracionUI extends JDialog {
 
     private JPanel cargarBotonesTabla() {
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(1, 0, 10, 10));
-        JButton btnAddCannonical = new JButton("Add"); //ToDo
+        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        JButton btnAddCannonical = new JButton(UtilidadesImagenes.getIcono("plus.png"));
+        btnAddCannonical.setPreferredSize(new Dimension(30, 30));
+        btnAddCannonical.setToolTipText(Mensajes.getMensaje("anadir"));
         btnAddCannonical.addActionListener(l -> addCannonicalId());
-        JButton btnEditCannonical = new JButton("Edit"); //ToDo
+        JButton btnEditCannonical = new JButton(UtilidadesImagenes.getIcono("edit.png"));
+        btnEditCannonical.setPreferredSize(new Dimension(30, 30));
+        btnEditCannonical.setToolTipText(Mensajes.getMensaje("editar"));
         btnEditCannonical.addActionListener(l -> editCannonicalId());
-        JButton btnRemoveCannonical = new JButton("Delete"); //ToDo
+        JButton btnRemoveCannonical = new JButton(UtilidadesImagenes.getIcono("trash.png"));
+        btnRemoveCannonical.setPreferredSize(new Dimension(30, 30));
+        btnRemoveCannonical.setToolTipText(Mensajes.getMensaje("eliminar"));
         btnRemoveCannonical.addActionListener(l -> removeCannonicalId());
         panel.add(btnAddCannonical);
         panel.add(btnEditCannonical);
