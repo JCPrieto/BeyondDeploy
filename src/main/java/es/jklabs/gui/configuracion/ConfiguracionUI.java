@@ -4,6 +4,7 @@ import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.table.model.CannonicalTableModel;
 import es.jklabs.json.configuracion.BucketConfig;
+import es.jklabs.json.configuracion.CannonicalId;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
@@ -14,6 +15,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -135,7 +137,20 @@ public class ConfiguracionUI extends JDialog {
         configuracion.getBucketConfig().setAccesKey(txAccesKey.getText());
         configuracion.getBucketConfig().setSecretKey(UtilidadesEncryptacion.encrypt(String.valueOf(txSecretKey
                 .getPassword())));
-        //ToDo Almacenar datos de la tabla en la configuracion
+        List<CannonicalId> list = new ArrayList<>();
+        for (int i = 0; i < tmCannonicalId.getRowCount(); i++) {
+            CannonicalId cannonicalId = new CannonicalId();
+            cannonicalId.setNombre(String.valueOf(tmCannonicalId.getValueAt(i, 0)));
+            cannonicalId.setId(String.valueOf(tmCannonicalId.getValueAt(i, 1)));
+            list.add(cannonicalId);
+        }
+        configuracion.getCannonicalIds().removeIf(c -> !list.contains(c));
+        list.stream().filter(c ->
+                configuracion.getCannonicalIds().contains(c)).forEach(c ->
+                configuracion.getCannonicalIds().get(configuracion.getCannonicalIds().indexOf(c)).setNombre(c.getNombre()));
+        list.stream().filter(c ->
+                !configuracion.getCannonicalIds().contains(c)).forEach(c ->
+                configuracion.getCannonicalIds().add(c));
         UtilidadesConfiguracion.guardarConfiguracion(configuracion);
         padre.actualizarPanelCentral();
     }

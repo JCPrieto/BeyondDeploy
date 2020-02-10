@@ -66,6 +66,7 @@ public class UtilidadesConfiguracion {
                 CannonicalId argentina = new CannonicalId(Mensajes.getMensaje("argentina"), Constantes.CANNONICAL_ID_ARGENTINA);
                 configuracion.getCannonicalIds().add(chile);
                 configuracion.getCannonicalIds().add(argentina);
+                guardarConfiguracion(configuracion);
             }
         } catch (FileNotFoundException e) {
             Logger.info("Fichero de configuracion no encontrado", e);

@@ -9,6 +9,10 @@ public class CannonicalId implements Serializable {
     private String nombre;
     private String id;
 
+    public CannonicalId() {
+
+    }
+
     public CannonicalId(String nombre, String id) {
         this.nombre = nombre;
         this.id = id;
