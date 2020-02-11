@@ -2,7 +2,6 @@ package es.jklabs.utilidades;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
@@ -35,7 +34,7 @@ public class UtilidadesS3 {
                 Objects.requireNonNull(UtilidadesEncryptacion.decrypt(bucketConfig.getSecretKey())));
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .withRegion(Regions.EU_WEST_3)
+                .withRegion(bucketConfig.getRegion())
                 .build();
     }
 

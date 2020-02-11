@@ -1,5 +1,6 @@
 package es.jklabs.gui.configuracion;
 
+import com.amazonaws.regions.Regions;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.UtilidadesImagenes;
@@ -32,6 +33,7 @@ public class ConfiguracionUI extends JDialog {
     private JPasswordField txSecretKey;
     private JTable tbCannonicalId;
     private CannonicalTableModel tmCannonicalId;
+    private JComboBox<Regions> cbRegion;
 
     public ConfiguracionUI(MainUI mainUI, Configuracion configuracion) {
         super(mainUI, mensajes.getString("configuracion"), true);
@@ -176,6 +178,10 @@ public class ConfiguracionUI extends JDialog {
             valido = false;
             Growls.mostrarAviso(GUARDAR_CONFIGURACION, "secret.key.vacio");
         }
+        if (cbRegion.getSelectedItem() == null) {
+            valido = false;
+            Growls.mostrarAviso(GUARDAR_CONFIGURACION, "region.vacio");
+        }
         return valido;
     }
 
@@ -214,6 +220,14 @@ public class ConfiguracionUI extends JDialog {
         c.gridx = 1;
         c.gridy = 5;
         panel.add(txSecretKey, c);
+        JLabel lbRegion = new JLabel(Mensajes.getMensaje("region"));
+        c.gridx = 0;
+        c.gridy = 6;
+        panel.add(lbRegion, c);
+        cbRegion = new JComboBox<>(Regions.values());
+        c.gridx = 1;
+        c.gridy = 6;
+        panel.add(cbRegion, c);
         cargarDatosFormulario();
         return panel;
     }
@@ -223,6 +237,7 @@ public class ConfiguracionUI extends JDialog {
             txBucketName.setText(configuracion.getBucketConfig().getBucketName());
             txAccesKey.setText(configuracion.getBucketConfig().getAccesKey());
             txSecretKey.setText(UtilidadesEncryptacion.decrypt(configuracion.getBucketConfig().getSecretKey()));
+            cbRegion.setSelectedItem(configuracion.getBucketConfig().getRegion());
         }
     }
 

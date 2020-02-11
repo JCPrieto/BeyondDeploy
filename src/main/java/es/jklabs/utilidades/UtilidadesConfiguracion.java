@@ -1,5 +1,6 @@
 package es.jklabs.utilidades;
 
+import com.amazonaws.regions.Regions;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -66,6 +67,7 @@ public class UtilidadesConfiguracion {
                 CannonicalId argentina = new CannonicalId(Mensajes.getMensaje("argentina"), Constantes.CANNONICAL_ID_ARGENTINA);
                 configuracion.getCannonicalIds().add(chile);
                 configuracion.getCannonicalIds().add(argentina);
+                configuracion.getBucketConfig().setRegion(Regions.EU_WEST_3);
                 guardarConfiguracion(configuracion);
             }
         } catch (FileNotFoundException e) {
