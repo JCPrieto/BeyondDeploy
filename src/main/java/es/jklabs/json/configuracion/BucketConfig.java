@@ -1,5 +1,7 @@
 package es.jklabs.json.configuracion;
 
+import com.amazonaws.regions.Regions;
+
 import java.io.Serializable;
 
 public class BucketConfig implements Serializable {
@@ -8,6 +10,7 @@ public class BucketConfig implements Serializable {
     private String bucketName;
     private String accesKey;
     private String secretKey;
+    private Regions region;
 
     public String getBucketName() {
         return bucketName;
@@ -31,5 +34,13 @@ public class BucketConfig implements Serializable {
 
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
+    }
+
+    public Regions getRegion() {
+        return region;
+    }
+
+    public void setRegion(Regions region) {
+        this.region = region;
     }
 }

@@ -21,6 +21,7 @@ import java.util.Timer;
 public class Explorador extends JPanel {
 
     private static final long serialVersionUID = -8285796640106146202L;
+    public static final String SUBIR_ARCHIVO = "subir.archivo";
     private static ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
     private MainUI padre;
     private Explorador anterior;
@@ -62,7 +63,7 @@ public class Explorador extends JPanel {
             JLabel jlNombreCarpera = new JLabel(folder.getName(), SwingConstants.CENTER);
             botonera.add(jlNombreCarpera, BorderLayout.CENTER);
         }
-        JButton jbUpload = new JButton(mensajes.getString("subir.archivo"));
+        JButton jbUpload = new JButton(mensajes.getString(SUBIR_ARCHIVO));
         jbUpload.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
                 ("img/icons/upload.png"))));
         jbUpload.addActionListener(l -> uploadFile());
@@ -78,8 +79,11 @@ public class Explorador extends JPanel {
             File file = fc.getSelectedFile();
             padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             this.setEnabled(false);
-            UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion().getBucketConfig());
-            Growls.mostrarInfo("subida.realizada");
+            if (UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion())) {
+                Growls.mostrarInfo("subida.realizada");
+            } else {
+                Growls.mostrarAviso(SUBIR_ARCHIVO, SUBIR_ARCHIVO);
+            }
             this.setEnabled(true);
             padre.setCursor(null);
             recargarPantalla();
@@ -93,12 +97,16 @@ public class Explorador extends JPanel {
         }
         folder.getS3Forlders().clear();
         folder.getS3Files().clear();
-        ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), folder
-                .getFullpath());
-        UtilidadesS3.actualizarCarpeta(folder, elementos);
-        cargarPanelCentral();
-        if (padre.getPanelCentral() != null) {
-            SwingUtilities.invokeLater(() -> SwingUtilities.updateComponentTreeUI(padre.getPanelCentral()));
+        try {
+            ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), folder
+                    .getFullpath());
+            UtilidadesS3.actualizarCarpeta(folder, elementos);
+            cargarPanelCentral();
+            if (padre.getPanelCentral() != null) {
+                SwingUtilities.invokeLater(() -> SwingUtilities.updateComponentTreeUI(padre.getPanelCentral()));
+            }
+        } catch (Exception e) {
+            Growls.mostrarError("cargar.archivos.bucket", e);
         }
         padre.setCursor(null);
     }

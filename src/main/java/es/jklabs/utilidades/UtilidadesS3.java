@@ -2,13 +2,13 @@ package es.jklabs.utilidades;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.BucketConfig;
+import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +34,7 @@ public class UtilidadesS3 {
                 Objects.requireNonNull(UtilidadesEncryptacion.decrypt(bucketConfig.getSecretKey())));
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .withRegion(Regions.EU_WEST_3)
+                .withRegion(bucketConfig.getRegion())
                 .build();
     }
 
@@ -71,10 +71,17 @@ public class UtilidadesS3 {
         }
     }
 
-    public static void uploadFile(File file, String fullpath, BucketConfig bucketConfig) {
-        AmazonS3 s3 = getAmazonS3(bucketConfig);
-        PutObjectRequest request = new PutObjectRequest(bucketConfig.getBucketName(), fullpath + file.getName(), file);
-        s3.putObject(request);
+    public static boolean uploadFile(File file, String fullpath, Configuracion configuracion) {
+        AmazonS3 s3 = getAmazonS3(configuracion.getBucketConfig());
+        PutObjectRequest request = new PutObjectRequest(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), file);
+        if (s3.putObject(request) != null) {
+            AccessControlList acl = s3.getObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName());
+            configuracion.getCannonicalIds().forEach(c ->
+                    acl.grantPermission(new CanonicalGrantee(c.getId()), Permission.Read));
+            s3.setObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), acl);
+            return true;
+        }
+        return false;
     }
 
     public static ObjectListing getObjetos(BucketConfig bucketConfig, String fullpath) {
