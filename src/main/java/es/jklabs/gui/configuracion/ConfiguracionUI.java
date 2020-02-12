@@ -39,7 +39,7 @@ public class ConfiguracionUI extends JDialog {
         super(mainUI, mensajes.getString("configuracion"), true);
         this.padre = mainUI;
         this.configuracion = configuracion;
-        setPreferredSize(new Dimension(600, 350));
+        setPreferredSize(new Dimension(600, 450));
         cargarPantalla();
     }
 
