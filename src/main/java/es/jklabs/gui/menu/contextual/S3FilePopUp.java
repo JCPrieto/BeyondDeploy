@@ -2,18 +2,18 @@ package es.jklabs.gui.menu.contextual;
 
 import es.jklabs.gui.navegacion.Explorador;
 import es.jklabs.s3.model.S3File;
+import es.jklabs.s3.model.S3FileVersion;
+import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesS3;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Locale;
+import java.util.List;
 import java.util.Objects;
-import java.util.ResourceBundle;
 
 public class S3FilePopUp extends JPopupMenu {
 
     private static final long serialVersionUID = 5925867780383236170L;
-    private static ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
     private final Explorador explorador;
     private final S3File s3File;
 
@@ -25,17 +25,34 @@ public class S3FilePopUp extends JPopupMenu {
     }
 
     private void cargarElementos() {
-        JMenuItem jmiDescargar = new JMenuItem(mensajes.getString("descargar"), new ImageIcon(Objects
+        JMenuItem jmiDescargar = new JMenuItem(Mensajes.getMensaje("descargar"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/download.png"))));
         jmiDescargar.addActionListener(l -> descargarArchivo());
-        ImageIcon imageIcon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/trash.png")));
-        Image img = imageIcon.getImage().getScaledInstance(24, 24, Image
-                .SCALE_SMOOTH);
-        JMenuItem jmiEliminar = new JMenuItem(mensajes.getString("eliminar"), new ImageIcon(img));
-        jmiEliminar.addActionListener(l -> elminarArchivo());
         add(jmiDescargar);
+        ImageIcon iconPapelera = getIcon("img/icons/trash.png");
+        ImageIcon iconReloj = getIcon("img/icons/clock.png");
+        JMenu jmVersiones = new JMenu(Mensajes.getMensaje("versiones"));
+        jmVersiones.setIcon(iconReloj);
+        List<S3FileVersion> s3FileVersionList = UtilidadesS3.getVersiones(explorador.getPadre().getConfiguracion().getBucketConfig(), s3File);
+        for (S3FileVersion s3FileVersion : s3FileVersionList) {
+            JMenuItem jmiVersion = new JMenuItem(s3FileVersion.getFecha().toString(), iconPapelera);
+            jmiVersion.addActionListener(l -> eliminarVersion(s3FileVersion));
+            jmVersiones.add(jmiVersion);
+        }
+        add(jmVersiones);
+        JMenuItem jmiEliminar = new JMenuItem(Mensajes.getMensaje("eliminar"), iconPapelera);
+        jmiEliminar.addActionListener(l -> elminarArchivo());
         add(jmiEliminar);
+    }
+
+    private ImageIcon getIcon(String resource) {
+        return new ImageIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
+                (resource))).getImage().getScaledInstance(24, 24, Image
+                .SCALE_SMOOTH));
+    }
+
+    private void eliminarVersion(S3FileVersion s3FileVersion) {
+        UtilidadesS3.elimninarVersion(explorador.getPadre().getConfiguracion().getBucketConfig(), s3File, s3FileVersion);
     }
 
     private void elminarArchivo() {

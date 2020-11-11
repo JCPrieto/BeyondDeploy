@@ -10,12 +10,15 @@ import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.BucketConfig;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.s3.model.S3File;
+import es.jklabs.s3.model.S3FileVersion;
 import es.jklabs.s3.model.S3Folder;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class UtilidadesS3 {
@@ -113,5 +116,22 @@ public class UtilidadesS3 {
         AmazonS3 s3 = getAmazonS3(bucketConfig);
         s3.deleteObject(new DeleteObjectRequest(bucketConfig.getBucketName(), s3File.getFullPath()));
         Growls.mostrarInfo("archivo.eliminado.correctamente");
+    }
+
+    public static List<S3FileVersion> getVersiones(BucketConfig bucketConfig, S3File s3File) {
+        AmazonS3 s3 = getAmazonS3(bucketConfig);
+        List<S3VersionSummary> versiones = s3.listVersions(new ListVersionsRequest(bucketConfig.getBucketName(), s3File.getFullPath(), null, null, null, 10)).getVersionSummaries();
+        List<S3FileVersion> s3FileVersions = new ArrayList<>();
+        for (S3VersionSummary versionSummary : versiones) {
+            S3FileVersion s3FileVersion = new S3FileVersion();
+            s3FileVersion.setId(versionSummary.getVersionId());
+            s3FileVersion.setFecha(versionSummary.getLastModified());
+            s3FileVersions.add(s3FileVersion);
+        }
+        return s3FileVersions;
+    }
+
+    public static void elimninarVersion(BucketConfig bucketConfig, S3File s3File, S3FileVersion s3FileVersion) {
+        //ToDo
     }
 }
