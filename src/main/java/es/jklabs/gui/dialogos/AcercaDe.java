@@ -20,7 +20,7 @@ import java.util.ResourceBundle;
 public class AcercaDe extends JDialog {
 
     private static final long serialVersionUID = -3603153746836186743L;
-    private static ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
+    private static final ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
 
     public AcercaDe(MainUI mainUI) {
         super(mainUI, mensajes.getString("acerca.de"), true);
@@ -51,8 +51,8 @@ public class AcercaDe extends JDialog {
         cns.insets = new Insets(3, 10, 3, 10);
         cns.gridy = yPosition++;
         panel.add(jLabelMyName, cns);
-        final JLabel jLabelMyWeb = new JLabel("JCPrieto.tk", SwingConstants.LEFT);
-        jLabelMyWeb.addMouseListener(new UrlMouseListener(jLabelMyWeb, "https://jcprieto.tk"));
+        final JLabel jLabelMyWeb = new JLabel("JCPrieto.ml", SwingConstants.LEFT);
+        jLabelMyWeb.addMouseListener(new UrlMouseListener(jLabelMyWeb, "https://jcprieto.ml"));
         cns.gridx = 1;
         panel.add(jLabelMyWeb, cns);
         JLabel jLabelMyMail = new JLabel("JuanC.Prieto.Silos@gmail.com", SwingConstants.LEFT);

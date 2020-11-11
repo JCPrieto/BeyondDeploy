@@ -32,6 +32,10 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.7.0
+
+    * Mostrar versiones anteriores de un archivo para volver a una versión anterior.
+
 * 0.6.0
 
     * Se permite dar permisos a otras cuentas AWS para que tengan acceso a los archivos que subimos al bucket.
