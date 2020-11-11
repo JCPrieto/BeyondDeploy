@@ -53,6 +53,7 @@ public class S3FilePopUp extends JPopupMenu {
 
     private void eliminarVersion(S3FileVersion s3FileVersion) {
         UtilidadesS3.elimninarVersion(explorador.getPadre().getConfiguracion().getBucketConfig(), s3File, s3FileVersion);
+        explorador.recargarPantalla();
     }
 
     private void elminarArchivo() {

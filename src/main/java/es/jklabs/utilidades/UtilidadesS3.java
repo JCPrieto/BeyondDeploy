@@ -132,6 +132,8 @@ public class UtilidadesS3 {
     }
 
     public static void elimninarVersion(BucketConfig bucketConfig, S3File s3File, S3FileVersion s3FileVersion) {
-        //ToDo
+        AmazonS3 s3 = getAmazonS3(bucketConfig);
+        s3.deleteVersion(new DeleteVersionRequest(bucketConfig.getBucketName(), s3File.getFullPath(), s3FileVersion.getId()));
+        Growls.mostrarInfo("version.eliminada.correctamente");
     }
 }
