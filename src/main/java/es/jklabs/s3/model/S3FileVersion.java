@@ -8,6 +8,7 @@ public class S3FileVersion implements Serializable {
     private static final long serialVersionUID = 1300082330894333475L;
     private String id;
     private Date fecha;
+    private S3File s3File;
 
     public String getId() {
         return id;
@@ -40,5 +41,13 @@ public class S3FileVersion implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public S3File getS3File() {
+        return s3File;
+    }
+
+    public void setS3File(S3File s3File) {
+        this.s3File = s3File;
     }
 }

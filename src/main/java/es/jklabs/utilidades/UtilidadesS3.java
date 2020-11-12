@@ -18,6 +18,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,27 +51,7 @@ public class UtilidadesS3 {
             File directorio = fc.getSelectedFile();
             AmazonS3 s3 = getAmazonS3(bucketConfig);
             S3Object s3Object = s3.getObject(bucketConfig.getBucketName(), file.getFullPath());
-            InputStream in = s3Object.getObjectContent();
-            byte[] buf = new byte[1024];
-            try (OutputStream out = new FileOutputStream(new File(directorio.getAbsolutePath() +
-                    UtilidadesFichero.SEPARADOR + file.getName()))) {
-                int count;
-                while ((count = in.read(buf)) != -1) {
-                    if (Thread.interrupted()) {
-                        throw new InterruptedException();
-                    }
-                    out.write(buf, 0, count);
-                }
-                in.close();
-                Growls.mostrarInfo("archivo.descargado.correctamente");
-            } catch (IOException e) {
-                Growls.mostrarError("descargar.archivo", e);
-            } catch (InterruptedException e) {
-                Growls.mostrarError("descargar.archivo", e);
-                Thread.currentThread().interrupt();
-            } finally {
-                ventana.setCursor(null);
-            }
+            download(ventana, directorio, s3Object, file.getName());
         }
     }
 
@@ -126,6 +107,7 @@ public class UtilidadesS3 {
             S3FileVersion s3FileVersion = new S3FileVersion();
             s3FileVersion.setId(versionSummary.getVersionId());
             s3FileVersion.setFecha(versionSummary.getLastModified());
+            s3FileVersion.setS3File(s3File);
             s3FileVersions.add(s3FileVersion);
         }
         return s3FileVersions;
@@ -136,4 +118,55 @@ public class UtilidadesS3 {
         s3.deleteVersion(new DeleteVersionRequest(bucketConfig.getBucketName(), s3File.getFullPath(), s3FileVersion.getId()));
         Growls.mostrarInfo("version.eliminada.correctamente");
     }
+
+    public static void getObject(MainUI ventana, BucketConfig bucketConfig, S3FileVersion fileVersion) {
+        JFileChooser fc = new JFileChooser();
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int retorno = fc.showSaveDialog(ventana);
+        if (retorno == JFileChooser.APPROVE_OPTION) {
+            ventana.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            File directorio = fc.getSelectedFile();
+            AmazonS3 s3 = getAmazonS3(bucketConfig);
+            S3Object s3Object = s3.getObject(new GetObjectRequest(bucketConfig.getBucketName(), fileVersion.getS3File().getFullPath(), fileVersion.getId()));
+            download(ventana, directorio, s3Object, getDownloadName(fileVersion));
+        }
+    }
+
+    private static String getDownloadName(S3FileVersion fileVersion) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fileVersion.getFecha());
+        return String.valueOf(calendar.get(Calendar.YEAR)) +
+                calendar.get(Calendar.MONTH) +
+                calendar.get(Calendar.DAY_OF_MONTH) +
+                calendar.get(Calendar.HOUR_OF_DAY) +
+                calendar.get(Calendar.MINUTE) +
+                calendar.get(Calendar.SECOND) +
+                "_" +
+                fileVersion.getS3File().getName();
+    }
+
+    private static void download(MainUI ventana, File directorio, S3Object s3Object, String nombre) {
+        InputStream in = s3Object.getObjectContent();
+        byte[] buf = new byte[1024];
+        try (OutputStream out = new FileOutputStream(new File(directorio.getAbsolutePath() +
+                UtilidadesFichero.SEPARADOR + nombre))) {
+            int count;
+            while ((count = in.read(buf)) != -1) {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException();
+                }
+                out.write(buf, 0, count);
+            }
+            in.close();
+            Growls.mostrarInfo("archivo.descargado.correctamente");
+        } catch (IOException e) {
+            Growls.mostrarError("descargar.archivo", e);
+        } catch (InterruptedException e) {
+            Growls.mostrarError("descargar.archivo", e);
+            Thread.currentThread().interrupt();
+        } finally {
+            ventana.setCursor(null);
+        }
+    }
+
 }

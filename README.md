@@ -4,7 +4,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Requisitos ###
 
-* Java 11
+* Java 8
 * LibNotify (Para las notificaciones en Linux)
 
 ### Ejecución ###
@@ -31,6 +31,11 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 * Integración con EC2 para crear, parar o reiniciar maquinas, así como ejecutar sentencias de comando via SSH.
 
 ### Changelog ###
+
+* 0.8.0
+
+    * Opción de descarga de una versión anterior.
+    * Mensaje de confirmación antes de eliminar un archivo o versión.
 
 * 0.7.0
 

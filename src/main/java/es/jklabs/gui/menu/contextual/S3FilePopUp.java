@@ -25,8 +25,9 @@ public class S3FilePopUp extends JPopupMenu {
     }
 
     private void cargarElementos() {
-        JMenuItem jmiDescargar = new JMenuItem(Mensajes.getMensaje("descargar"), new ImageIcon(Objects
-                .requireNonNull(getClass().getClassLoader().getResource("img/icons/download.png"))));
+        ImageIcon iconDownload = new ImageIcon(Objects
+                .requireNonNull(getClass().getClassLoader().getResource("img/icons/download.png")));
+        JMenuItem jmiDescargar = new JMenuItem(Mensajes.getMensaje("descargar"), iconDownload);
         jmiDescargar.addActionListener(l -> descargarArchivo());
         add(jmiDescargar);
         ImageIcon iconPapelera = getIcon("img/icons/trash.png");
@@ -35,14 +36,24 @@ public class S3FilePopUp extends JPopupMenu {
         jmVersiones.setIcon(iconReloj);
         List<S3FileVersion> s3FileVersionList = UtilidadesS3.getVersiones(explorador.getPadre().getConfiguracion().getBucketConfig(), s3File);
         for (S3FileVersion s3FileVersion : s3FileVersionList) {
-            JMenuItem jmiVersion = new JMenuItem(s3FileVersion.getFecha().toString(), iconPapelera);
-            jmiVersion.addActionListener(l -> eliminarVersion(s3FileVersion));
-            jmVersiones.add(jmiVersion);
+            JMenu jmRegVersion = new JMenu(s3FileVersion.getFecha().toString());
+            JMenuItem jmiDownloadVersion = new JMenuItem(Mensajes.getMensaje("descargar"), iconDownload);
+            JMenuItem jmiDeleteVersion = new JMenuItem(Mensajes.getMensaje("eliminar"), iconPapelera);
+            jmiDownloadVersion.addActionListener(l -> descargarVersion(s3FileVersion));
+            jmiDeleteVersion.addActionListener(l -> eliminarVersion(s3FileVersion));
+            jmRegVersion.add(jmiDownloadVersion);
+            jmRegVersion.add(jmiDeleteVersion);
+            jmVersiones.add(jmRegVersion);
         }
         add(jmVersiones);
         JMenuItem jmiEliminar = new JMenuItem(Mensajes.getMensaje("eliminar"), iconPapelera);
         jmiEliminar.addActionListener(l -> elminarArchivo());
         add(jmiEliminar);
+    }
+
+    private void descargarVersion(S3FileVersion s3FileVersion) {
+        UtilidadesS3.getObject(explorador.getPadre(), explorador.getPadre().getConfiguracion().getBucketConfig(),
+                s3FileVersion);
     }
 
     private ImageIcon getIcon(String resource) {
