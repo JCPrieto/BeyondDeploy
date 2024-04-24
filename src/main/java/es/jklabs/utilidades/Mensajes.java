@@ -42,4 +42,9 @@ public class Mensajes {
         }
         return text;
     }
+
+    public static String getError(String key, String[] params) {
+        String text = getError(key);
+        return addParametros(text, params);
+    }
 }

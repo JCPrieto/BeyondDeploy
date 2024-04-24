@@ -54,13 +54,17 @@ public class Growls {
     }
 
     public static void mostrarAviso(String titulo, String cuerpo) {
+        mostrarAviso(titulo, cuerpo, null);
+    }
+
+    public static void mostrarAviso(String titulo, String cuerpo, String[] params) {
         if (trayIcon != null) {
-            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getError(cuerpo), TrayIcon.MessageType.WARNING);
+            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getError(cuerpo, params), TrayIcon.MessageType.WARNING);
         } else {
             try {
                 Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
                         titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                        Mensajes.getError(cuerpo),
+                        Mensajes.getError(cuerpo, params),
                         "--icon=dialog-warning"});
             } catch (IOException e) {
                 Logger.error(e);

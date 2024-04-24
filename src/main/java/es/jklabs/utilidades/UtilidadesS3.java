@@ -16,7 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -148,8 +152,8 @@ public class UtilidadesS3 {
     private static void download(MainUI ventana, File directorio, S3Object s3Object, String nombre) {
         InputStream in = s3Object.getObjectContent();
         byte[] buf = new byte[1024];
-        try (OutputStream out = new FileOutputStream(new File(directorio.getAbsolutePath() +
-                UtilidadesFichero.SEPARADOR + nombre))) {
+        try (OutputStream out = Files.newOutputStream(new File(directorio.getAbsolutePath() +
+                UtilidadesFichero.SEPARADOR + nombre).toPath())) {
             int count;
             while ((count = in.read(buf)) != -1) {
                 if (Thread.interrupted()) {
@@ -169,4 +173,20 @@ public class UtilidadesS3 {
         }
     }
 
+    public static List<File> uploadFile(List<File> files, String fullpath, Configuracion configuracion) {
+        AmazonS3 s3 = getAmazonS3(configuracion.getBucketConfig());
+        List<File> errors = new ArrayList<>();
+        for (File file : files) {
+            PutObjectRequest request = new PutObjectRequest(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), file);
+            if (s3.putObject(request) != null) {
+                AccessControlList acl = s3.getObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName());
+                configuracion.getCannonicalIds().forEach(c ->
+                        acl.grantPermission(new CanonicalGrantee(c.getId()), Permission.Read));
+                s3.setObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), acl);
+            } else {
+                errors.add(file);
+            }
+        }
+        return errors;
+    }
 }

@@ -32,6 +32,11 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.9.0
+
+  * Drag&Drop de archivos
+  * Correciones de seguridad y estabilidad
+
 * 0.8.0
 
     * Opción de descarga de una versión anterior.

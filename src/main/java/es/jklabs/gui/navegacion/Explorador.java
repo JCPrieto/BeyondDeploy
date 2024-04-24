@@ -3,20 +3,23 @@ package es.jklabs.gui.navegacion;
 import com.amazonaws.services.s3.model.ObjectListing;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
+import es.jklabs.gui.utilidades.listener.S3DragAndDropListener;
 import es.jklabs.gui.utilidades.listener.S3FileListener;
 import es.jklabs.gui.utilidades.listener.S3FolderListener;
 import es.jklabs.gui.utilidades.task.ExploradorReloader;
 import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
 import es.jklabs.utilidades.UtilidadesS3;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.dnd.DropTarget;
 import java.io.File;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.List;
 import java.util.Timer;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Explorador extends JPanel {
 
@@ -125,6 +128,7 @@ public class Explorador extends JPanel {
 
     private void cargarPanelCentral() {
         jpMenu = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        jpMenu.setDropTarget(new DropTarget(jpMenu, new S3DragAndDropListener(this)));
         folder.getS3Forlders().forEach(this::addCarpeta);
         folder.getS3Files().forEach(this::addObjeto);
         add(jpMenu, BorderLayout.CENTER);
@@ -176,4 +180,21 @@ public class Explorador extends JPanel {
         return padre;
     }
 
+    public void uploadFile(List<File> files) {
+        padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        this.setEnabled(false);
+        List<File> errors = UtilidadesS3.uploadFile(files, folder.getFullpath(), padre.getConfiguracion());
+        if (errors.isEmpty()) {
+            Growls.mostrarInfo("subida.realizada");
+        } else if (files.size() != errors.size()) {
+            Growls.mostrarAviso("subida.parcial", "subida.parcial", new String[]{StringUtils.joinWith(", ", errors.stream()
+                    .map(File::getName)
+                    .collect(Collectors.toList()))});
+        } else {
+            Growls.mostrarAviso(SUBIR_ARCHIVO, SUBIR_ARCHIVO);
+        }
+        this.setEnabled(true);
+        padre.setCursor(null);
+        recargarPantalla();
+    }
 }
