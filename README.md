@@ -35,6 +35,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 * 0.9.0
 
   * Drag&Drop de archivos
+  * Homogeneizar el tamaño de los elementos del explorador de archivos y carpetas
   * Correciones de seguridad y estabilidad
 
 * 0.8.0
