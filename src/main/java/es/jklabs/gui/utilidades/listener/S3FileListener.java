@@ -14,11 +14,11 @@ import java.awt.event.MouseListener;
 public class S3FileListener implements MouseListener {
 
     private final MainUI padre;
-    private final JLabel jLabel;
+    private final JButton jLabel;
     private final S3File s3File;
     private final Explorador explorador;
 
-    public S3FileListener(MainUI padre, Explorador explorador, JLabel jLabel, S3File s3File) {
+    public S3FileListener(MainUI padre, Explorador explorador, JButton jLabel, S3File s3File) {
         this.padre = padre;
         this.explorador = explorador;
         this.jLabel = jLabel;

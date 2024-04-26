@@ -11,11 +11,11 @@ import java.awt.event.MouseListener;
 
 public class S3FolderListener implements MouseListener {
     private final MainUI padre;
-    private final JLabel jLabel;
+    private final JButton jLabel;
     private final S3Folder s3Folder;
     private final Explorador explorador;
 
-    public S3FolderListener(MainUI padre, Explorador explorador, JLabel jLabel, S3Folder s3Folder) {
+    public S3FolderListener(MainUI padre, Explorador explorador, JButton jLabel, S3Folder s3Folder) {
         this.padre = padre;
         this.explorador = explorador;
         this.jLabel = jLabel;

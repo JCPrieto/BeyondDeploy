@@ -135,7 +135,10 @@ public class Explorador extends JPanel {
     }
 
     private void addObjeto(S3File s3File) {
-        JLabel jLabel = new JLabel(s3File.getName());
+        JButton jButton = new JButton(s3File.getName());
+        jButton.setPreferredSize(new Dimension(110, 100));
+        jButton.setContentAreaFilled(false);
+        jButton.setToolTipText(s3File.getName());
         String icono;
         if (esArchivoComprimido(s3File.getName())) {
             icono = "img/icons/compress.png";
@@ -146,12 +149,12 @@ public class Explorador extends JPanel {
         } else {
             icono = "img/icons/file.png";
         }
-        jLabel.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
+        jButton.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
                 (icono))));
-        jLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
-        jLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-        jLabel.addMouseListener(new S3FileListener(padre, this, jLabel, s3File));
-        jpMenu.add(jLabel);
+        jButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        jButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        jButton.addMouseListener(new S3FileListener(padre, this, jButton, s3File));
+        jpMenu.add(jButton);
     }
 
     private boolean esArchivoXML(String name) {
@@ -167,13 +170,16 @@ public class Explorador extends JPanel {
     }
 
     private void addCarpeta(S3Folder s3Folder) {
-        JLabel jLabel = new JLabel(s3Folder.getName());
-        jLabel.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
+        JButton jButton = new JButton(s3Folder.getName());
+        jButton.setPreferredSize(new Dimension(110, 100));
+        jButton.setContentAreaFilled(false);
+        jButton.setToolTipText(s3Folder.getName());
+        jButton.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
                 ("img/icons/folder-blue.png"))));
-        jLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
-        jLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-        jLabel.addMouseListener(new S3FolderListener(padre, this, jLabel, s3Folder));
-        jpMenu.add(jLabel);
+        jButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        jButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        jButton.addMouseListener(new S3FolderListener(padre, this, jButton, s3Folder));
+        jpMenu.add(jButton);
     }
 
     public MainUI getPadre() {
