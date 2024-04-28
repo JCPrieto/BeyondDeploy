@@ -3,6 +3,7 @@ package es.jklabs.gui.navegacion;
 import com.amazonaws.services.s3.model.ObjectListing;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
+import es.jklabs.gui.utilidades.layout.WrapLayout;
 import es.jklabs.gui.utilidades.listener.S3DragAndDropListener;
 import es.jklabs.gui.utilidades.listener.S3FileListener;
 import es.jklabs.gui.utilidades.listener.S3FolderListener;
@@ -29,8 +30,8 @@ public class Explorador extends JPanel {
     private MainUI padre;
     private Explorador anterior;
     private S3Folder folder;
-    private JPanel jpMenu;
     private transient Timer timer;
+    private JScrollPane scrollPane;
 
     public Explorador(MainUI padre, S3Folder folder) {
         super();
@@ -47,6 +48,8 @@ public class Explorador extends JPanel {
 
     private void cargarElementos() {
         cargarBotoneraSuperior();
+        scrollPane = new JScrollPane();
+        add(scrollPane, BorderLayout.CENTER);
         timer = new Timer();
         timer.schedule(new ExploradorReloader(this), 0, 60000);
     }
@@ -95,9 +98,6 @@ public class Explorador extends JPanel {
 
     public void recargarPantalla() {
         padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (jpMenu != null) {
-            remove(jpMenu);
-        }
         folder.getS3Forlders().clear();
         folder.getS3Files().clear();
         try {
@@ -127,14 +127,14 @@ public class Explorador extends JPanel {
     }
 
     private void cargarPanelCentral() {
-        jpMenu = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel jpMenu = new JPanel(new WrapLayout(FlowLayout.LEFT));
         jpMenu.setDropTarget(new DropTarget(jpMenu, new S3DragAndDropListener(this)));
-        folder.getS3Forlders().forEach(this::addCarpeta);
-        folder.getS3Files().forEach(this::addObjeto);
-        add(jpMenu, BorderLayout.CENTER);
+        folder.getS3Forlders().forEach(s -> jpMenu.add(getFolder(s)));
+        folder.getS3Files().forEach(s -> jpMenu.add(getFile(s)));
+        scrollPane.setViewportView(jpMenu);
     }
 
-    private void addObjeto(S3File s3File) {
+    private JButton getFile(S3File s3File) {
         JButton jButton = new JButton(s3File.getName());
         jButton.setPreferredSize(new Dimension(110, 100));
         jButton.setContentAreaFilled(false);
@@ -154,7 +154,20 @@ public class Explorador extends JPanel {
         jButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         jButton.setHorizontalTextPosition(SwingConstants.CENTER);
         jButton.addMouseListener(new S3FileListener(padre, this, jButton, s3File));
-        jpMenu.add(jButton);
+        return jButton;
+    }
+
+    private JButton getFolder(S3Folder s3Folder) {
+        JButton jButton = new JButton(s3Folder.getName());
+        jButton.setPreferredSize(new Dimension(110, 100));
+        jButton.setContentAreaFilled(false);
+        jButton.setToolTipText(s3Folder.getName());
+        jButton.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
+                ("img/icons/folder-blue.png"))));
+        jButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        jButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        jButton.addMouseListener(new S3FolderListener(padre, this, jButton, s3Folder));
+        return jButton;
     }
 
     private boolean esArchivoXML(String name) {
@@ -167,19 +180,6 @@ public class Explorador extends JPanel {
 
     private boolean esArchivoComprimido(String name) {
         return name.endsWith(".war") || name.endsWith(".zip") || name.endsWith(".rar") || name.endsWith(".tar.gz");
-    }
-
-    private void addCarpeta(S3Folder s3Folder) {
-        JButton jButton = new JButton(s3Folder.getName());
-        jButton.setPreferredSize(new Dimension(110, 100));
-        jButton.setContentAreaFilled(false);
-        jButton.setToolTipText(s3Folder.getName());
-        jButton.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/folder-blue.png"))));
-        jButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        jButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        jButton.addMouseListener(new S3FolderListener(padre, this, jButton, s3Folder));
-        jpMenu.add(jButton);
     }
 
     public MainUI getPadre() {
