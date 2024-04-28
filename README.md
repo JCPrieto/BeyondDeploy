@@ -27,6 +27,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     
 ### ToDo ###
 
+* Actualizar librería xml.bind
 * Notificaciones en KDE
 * Integración con EC2 para crear, parar o reiniciar maquinas, así como ejecutar sentencias de comando via SSH.
 
