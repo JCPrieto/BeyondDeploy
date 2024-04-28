@@ -42,7 +42,6 @@ public class UtilidadesConfiguracion {
 
     public static void guardarConfiguracion(Configuracion configuracion, File file) {
         ObjectMapper mapper = getObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
             UtilidadesFichero.createBaseFolder();
             mapper.writeValue(file, configuracion);

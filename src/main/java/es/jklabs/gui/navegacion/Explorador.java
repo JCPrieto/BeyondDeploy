@@ -11,6 +11,7 @@ import es.jklabs.gui.utilidades.task.ExploradorReloader;
 import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3Folder;
 import es.jklabs.utilidades.UtilidadesS3;
+import es.jklabs.utilidades.UtilsCache;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -78,11 +79,12 @@ public class Explorador extends JPanel {
     }
 
     private void uploadFile() {
-        JFileChooser fc = new JFileChooser();
+        JFileChooser fc = new JFileChooser(UtilsCache.getLastUploadFolder());
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int retorno = fc.showOpenDialog(this);
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
+            UtilsCache.setLastUploadFolder(file.getParentFile().getPath());
             padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             this.setEnabled(false);
             if (UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion())) {
