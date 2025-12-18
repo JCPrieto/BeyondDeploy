@@ -7,10 +7,18 @@ plugins {
 group 'es.jklabs.desktop'
 version '0.9.0'
 
-mainClassName = "es.jklabs.BeyondDeploy"
+application {
+    mainClass = "es.jklabs.BeyondDeploy"
+}
 
-applicationDistribution.from("README.md") {
-    into ""
+distributions {
+    main {
+        contents {
+            from("README.md") {
+                into ""
+            }
+        }
+    }
 }
 
 repositories {
