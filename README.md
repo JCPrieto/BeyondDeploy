@@ -33,6 +33,9 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.9.1
+  * Actualización de dependencias: `commons-lang3` a 3.18.0 y `firebase-admin` a 9.7.0
+
 * 0.9.0
 
   * Drag&Drop de archivos
