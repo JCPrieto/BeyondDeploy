@@ -84,7 +84,13 @@ gradle-app.setting
 hs_err_pid*
 .idea/
 gradle/
+!gradle/
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 gradlew
 gradlew.bat
+!gradlew
+!gradlew.bat
 !/libs/*.jar
 src/main/resources/json/curriculum-a2a80-firebase-adminsdk-17wyo-de15a29f7c.json
