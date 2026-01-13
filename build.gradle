@@ -7,6 +7,14 @@ plugins {
 group 'es.jklabs.desktop'
 version '0.10.0'
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 application {
     mainClass = "es.jklabs.BeyondDeploy"
 }
