@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-- `src/main/java/` — Java sources (desktop Swing UI under `es/jklabs/gui/`, S3/Firebase logic under
+- `src/main/java/` — Java sources (desktop Swing UI under `es/jklabs/gui/`, S3/GitHub Releases logic under
   `es/jklabs/utilidades/`).
 - `src/main/resources/` — assets and configuration:
     - `i18n/` (`*.properties`) for user-facing strings.
@@ -28,7 +28,7 @@ Note: the wrapper targets Gradle 9; use JDK 17+ to run Gradle tasks reliably.
 ## Testing Guidelines
 
 - Framework: JUnit 4 (`*Test` naming, placed in `src/test/java/` mirroring package structure).
-- Prefer fast unit tests for utilities/models; avoid tests that require real AWS/Firebase credentials.
+- Prefer fast unit tests for utilities/models; avoid tests that require real AWS/GitHub credentials or network access.
 
 ## Commit & Pull Request Guidelines
 

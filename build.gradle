@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'es.jklabs.desktop'
-version '0.9.1'
+version '0.10.0'
 
 application {
     mainClass = "es.jklabs.BeyondDeploy"
@@ -21,6 +21,12 @@ distributions {
     }
 }
 
+processResources {
+    filesMatching("app.properties") {
+        expand(version: project.version)
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -28,7 +34,6 @@ repositories {
 dependencies {
     testImplementation 'junit:junit:4.13.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
-    implementation 'com.google.firebase:firebase-admin:9.7.0'
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.706'
     implementation 'org.apache.commons:commons-lang3:3.18.0'
     implementation 'commons-io:commons-io:2.16.1'

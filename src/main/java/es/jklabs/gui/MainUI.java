@@ -89,7 +89,7 @@ public class MainUI extends JFrame {
         menu.add(jmArchivo);
         menu.add(jmAyuda);
         try {
-            if (UtilidadesFirebase.existeNuevaVersion()) {
+            if (UtilidadesGithubRelease.existeNuevaVersion()) {
                 menu.add(Box.createHorizontalGlue());
                 JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"), new ImageIcon
                         (Objects.requireNonNull(getClass().getClassLoader().getResource("img/icons/update.png"))));
@@ -100,20 +100,12 @@ public class MainUI extends JFrame {
             }
         } catch (IOException e) {
             Logger.error("consultar.nueva.version", e);
-        } catch (InterruptedException e) {
-            Logger.error("consultar.nueva.version", e);
-            Thread.currentThread().interrupt();
         }
         super.setJMenuBar(menu);
     }
 
     private void descargarNuevaVersion() {
-        try {
-            UtilidadesFirebase.descargaNuevaVersion(this);
-        } catch (InterruptedException e) {
-            Growls.mostrarError("descargar.nueva.version", e);
-            Thread.currentThread().interrupt();
-        }
+        UtilidadesGithubRelease.descargaNuevaVersion(this);
     }
 
     private void mostrarAcercaDe() {
@@ -149,7 +141,7 @@ public class MainUI extends JFrame {
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             if (!Objects.equals(FilenameUtils.getExtension(file.getName()), "json")) {
-                file = new File(file.toString() + ".json");
+                file = new File(file + ".json");
             }
             UtilidadesConfiguracion.guardarConfiguracion(configuracion, file);
         }

@@ -1,0 +1,41 @@
+name: tests-and-release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  test-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Build distribution
+        run: ./gradlew distZip
+
+      - name: Read version
+        run:
+          echo "VERSION=$(./gradlew -q properties | awk '/^version: / {print $2}')" >> "$GITHUB_ENV"
+
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          generateReleaseNotes: true
+          skipIfReleaseExists: true
+          artifacts: build/distributions/*.zip

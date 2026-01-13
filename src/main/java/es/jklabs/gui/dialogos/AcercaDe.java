@@ -27,34 +27,7 @@ public class AcercaDe extends JDialog {
         cargarPantalla();
     }
 
-    private void cargarPantalla() {
-        final JPanel panel = new JPanel();
-        int yPosition = 0;
-        panel.setLayout(new GridBagLayout());
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        final GridBagConstraints cns = new GridBagConstraints();
-        final JLabel jLabelTitle = new JLabel(
-                "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1></html>", new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/s3-bucket.png"))), SwingConstants.CENTER);
-        cns.fill = GridBagConstraints.HORIZONTAL;
-        cns.insets = new Insets(10, 10, 10, 10);
-        cns.gridx = 0;
-        cns.gridy = yPosition++;
-        cns.gridwidth = 3;
-        panel.add(jLabelTitle, cns);
-        final JLabel jLabelCreadoPor = new JLabel(mensajes.getString("creado.por"), SwingConstants.LEFT);
-        cns.insets = new Insets(10, 10, 3, 10);
-        cns.gridy = yPosition++;
-        cns.gridwidth = 1;
-        panel.add(jLabelCreadoPor, cns);
-        final JLabel jLabelMyName = new JLabel("<html><b>Juan Carlos Prieto Silos</b></html>", SwingConstants.LEFT);
-        cns.insets = new Insets(3, 10, 3, 10);
-        cns.gridy = yPosition++;
-        panel.add(jLabelMyName, cns);
-        final JLabel jLabelMyWeb = new JLabel("Web", SwingConstants.LEFT);
-        jLabelMyWeb.addMouseListener(new UrlMouseListener(jLabelMyWeb, "https://curriculum-a2a80.web.app"));
-        cns.gridx = 1;
-        panel.add(jLabelMyWeb, cns);
+    private static JLabel getEmailLabel() {
         JLabel jLabelMyMail = new JLabel("JuanC.Prieto.Silos@gmail.com", SwingConstants.LEFT);
         jLabelMyMail.setAlignmentX(CENTER_ALIGNMENT);
         jLabelMyMail.addMouseListener(new MouseListener() {
@@ -88,6 +61,38 @@ public class AcercaDe extends JDialog {
                 jLabelMyMail.setCursor(null);
             }
         });
+        return jLabelMyMail;
+    }
+
+    private void cargarPantalla() {
+        final JPanel panel = new JPanel();
+        int yPosition = 0;
+        panel.setLayout(new GridBagLayout());
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        final GridBagConstraints cns = new GridBagConstraints();
+        final JLabel jLabelTitle = new JLabel(
+                "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1></html>", new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
+                ("img/icons/s3-bucket.png"))), SwingConstants.CENTER);
+        cns.fill = GridBagConstraints.HORIZONTAL;
+        cns.insets = new Insets(10, 10, 10, 10);
+        cns.gridx = 0;
+        cns.gridy = yPosition++;
+        cns.gridwidth = 3;
+        panel.add(jLabelTitle, cns);
+        final JLabel jLabelCreadoPor = new JLabel(mensajes.getString("creado.por"), SwingConstants.LEFT);
+        cns.insets = new Insets(10, 10, 3, 10);
+        cns.gridy = yPosition++;
+        cns.gridwidth = 1;
+        panel.add(jLabelCreadoPor, cns);
+        final JLabel jLabelMyName = new JLabel("<html><b>Juan Carlos Prieto Silos</b></html>", SwingConstants.LEFT);
+        cns.insets = new Insets(3, 10, 3, 10);
+        cns.gridy = yPosition++;
+        panel.add(jLabelMyName, cns);
+        final JLabel jLabelMyWeb = new JLabel("Web", SwingConstants.LEFT);
+        jLabelMyWeb.addMouseListener(new UrlMouseListener(jLabelMyWeb, "https://www.jcprieto.es"));
+        cns.gridx = 1;
+        panel.add(jLabelMyWeb, cns);
+        JLabel jLabelMyMail = getEmailLabel();
         cns.gridx = 2;
         panel.add(jLabelMyMail, cns);
         final JLabel jLabelPoweredBy = new JLabel(mensajes.getString("powered.by"), SwingConstants.LEFT);
@@ -98,16 +103,16 @@ public class AcercaDe extends JDialog {
         panel.add(jLabelPoweredBy, cns);
         addPowered(panel, cns, yPosition++, "Papirus", "https://github.com/PapirusDevelopmentTeam/papirus-icon-theme");
         addPowered(panel, cns, yPosition++, "Jackson", "https://github.com/FasterXML/jackson-core/wiki");
-        addPowered(panel, cns, yPosition++, "Firebase", "https://firebase.google.com");
+        addPowered(panel, cns, yPosition++, "GitHub Releases", "https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases");
         addPowered(panel, cns, yPosition++, "AWS Amazon S3", "https://aws.amazon.com/sdkforjava");
-        addPowered(panel, cns, yPosition++, "Apache Commons Lang", "http://commons.apache.org/proper/commons-lang");
-        addPowered(panel, cns, yPosition++, "Apache Commons IO", "http://commons.apache.org/proper/commons-io");
+        addPowered(panel, cns, yPosition++, "Apache Commons Lang", "https://commons.apache.org/proper/commons-lang");
+        addPowered(panel, cns, yPosition++, "Apache Commons IO", "https://commons.apache.org/proper/commons-io");
         JLabel jLabelLicense = new JLabel
                 ("<html><i>Esta obra está bajo una licencia de Creative Commons " +
                         "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>", new ImageIcon(Objects
                         .requireNonNull(getClass().getClassLoader().getResource
                                 ("img/icons/creative_commons.png"))), SwingConstants.TRAILING);
-        jLabelLicense.addMouseListener(new UrlMouseListener(jLabelLicense, "http://creativecommons.org/licenses/by-nc-sa/4.0/"));
+        jLabelLicense.addMouseListener(new UrlMouseListener(jLabelLicense, "https://creativecommons.org/licenses/by-nc-sa/4.0/"));
         cns.insets = new Insets(10, 10, 10, 10);
         cns.gridx = 0;
         cns.gridy = yPosition++;

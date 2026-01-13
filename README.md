@@ -20,7 +20,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 * Iconos: Papirus https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
 * Librerias:
     * Jackson https://github.com/FasterXML/jackson-core/wiki
-    * Firebase https://firebase.google.com
+  * GitHub Releases https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
     * AWS Amazon S3 https://aws.amazon.com/sdkforjava
     * Apache Commons Lang http://commons.apache.org/proper/commons-lang
     * Apache Commons IO http://commons.apache.org/proper/commons-io
@@ -32,6 +32,12 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 * Integración con EC2 para crear, parar o reiniciar maquinas, así como ejecutar sentencias de comando via SSH.
 
 ### Changelog ###
+
+* 0.10.0
+  * Migración del sistema de actualización a GitHub Releases
+  * Eliminación de dependencia y credenciales de Firebase
+  * Workflow de tests y publicación de releases
+  * Versión centralizada en Gradle
 
 * 0.9.1
   * Actualización de dependencias: `commons-lang3` a 3.18.0 y `firebase-admin` a 9.7.0

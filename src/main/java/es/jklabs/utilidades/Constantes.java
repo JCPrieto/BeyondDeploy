@@ -3,8 +3,9 @@ package es.jklabs.utilidades;
 public class Constantes {
 
     public static final String NOMBRE_APP = "BeyondDeploy";
-    static final String STORAGE_BUCKET = "curriculum-a2a80.appspot.com";
-    public static final String VERSION = "0.9.1";
+    public static final String VERSION = VersionUtils.getVersion();
+    public static final String GITHUB_OWNER = "JCPrieto";
+    public static final String GITHUB_REPO = "BeyondDeploy";
 
     private Constantes() {
 
