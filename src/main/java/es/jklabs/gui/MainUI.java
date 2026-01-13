@@ -88,20 +88,37 @@ public class MainUI extends JFrame {
         jmAyuda.add(jmiAcercaDe);
         menu.add(jmArchivo);
         menu.add(jmAyuda);
-        try {
-            if (UtilidadesGithubRelease.existeNuevaVersion()) {
-                menu.add(Box.createHorizontalGlue());
-                JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"), new ImageIcon
-                        (Objects.requireNonNull(getClass().getClassLoader().getResource("img/icons/update.png"))));
-                jmActualizacion.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-                jmActualizacion.setHorizontalTextPosition(SwingConstants.RIGHT);
-                jmActualizacion.addActionListener(al -> descargarNuevaVersion());
-                menu.add(jmActualizacion);
-            }
-        } catch (IOException e) {
-            Logger.error("consultar.nueva.version", e);
-        }
         super.setJMenuBar(menu);
+        new SwingWorker<Boolean, Void>() {
+            @Override
+            protected Boolean doInBackground() {
+                try {
+                    return UtilidadesGithubRelease.existeNuevaVersion();
+                } catch (IOException e) {
+                    Logger.error("consultar.nueva.version", e);
+                    return false;
+                }
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    if (get()) {
+                        menu.add(Box.createHorizontalGlue());
+                        JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"), new ImageIcon
+                                (Objects.requireNonNull(getClass().getClassLoader().getResource("img/icons/update.png"))));
+                        jmActualizacion.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+                        jmActualizacion.setHorizontalTextPosition(SwingConstants.RIGHT);
+                        jmActualizacion.addActionListener(al -> descargarNuevaVersion());
+                        menu.add(jmActualizacion);
+                        menu.revalidate();
+                        menu.repaint();
+                    }
+                } catch (Exception e) {
+                    Logger.error("consultar.nueva.version", e);
+                }
+            }
+        }.execute();
     }
 
     private void descargarNuevaVersion() {

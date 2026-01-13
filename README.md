@@ -33,6 +33,11 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.10.1
+  * Inicializacion de UI en EDT y tareas de red/configuracion en background para evitar bloqueos
+  * Manejo tolerante de cambios en la API de GitHub Releases (campos desconocidos)
+  * Desactivacion del aviso de deprecacion del AWS SDK v1 en arranque
+
 * 0.10.0
   * Migración del sistema de actualización a GitHub Releases
   * Eliminación de dependencia y credenciales de Firebase
