@@ -1,5 +1,7 @@
 package es.jklabs.utilidades;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -12,7 +14,7 @@ import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3FileVersion;
 import es.jklabs.s3.model.S3Folder;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import javax.swing.*;
 import java.awt.*;
@@ -52,38 +54,54 @@ public class UtilidadesS3 {
         int retorno = fc.showSaveDialog(ventana);
         if (retorno == JFileChooser.APPROVE_OPTION) {
             ventana.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            File directorio = fc.getSelectedFile();
-            AmazonS3 s3 = getAmazonS3(bucketConfig);
-            S3Object s3Object = s3.getObject(bucketConfig.getBucketName(), file.getFullPath());
-            download(ventana, directorio, s3Object, file.getName());
+            try {
+                File directorio = fc.getSelectedFile();
+                AmazonS3 s3 = getAmazonS3(bucketConfig);
+                S3Object s3Object = s3.getObject(bucketConfig.getBucketName(), file.getFullPath());
+                download(directorio, s3Object, file.getName());
+            } catch (AmazonClientException e) {
+                Growls.mostrarError("descargar.archivo", wrapAmazonException(e, "Descargar archivo"));
+            } finally {
+                ventana.setCursor(null);
+            }
         }
     }
 
     public static boolean uploadFile(File file, String fullpath, Configuracion configuracion) {
         AmazonS3 s3 = getAmazonS3(configuracion.getBucketConfig());
-        PutObjectRequest request = new PutObjectRequest(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), file);
-        if (s3.putObject(request) != null) {
-            AccessControlList acl = s3.getObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName());
-            configuracion.getCannonicalIds().forEach(c ->
-                    acl.grantPermission(new CanonicalGrantee(c.getId()), Permission.Read));
-            s3.setObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), acl);
-            return true;
+        try {
+            PutObjectRequest request = new PutObjectRequest(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), file);
+            if (s3.putObject(request) != null) {
+                AccessControlList acl = s3.getObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName());
+                configuracion.getCannonicalIds().forEach(c ->
+                        acl.grantPermission(new CanonicalGrantee(c.getId()), Permission.Read));
+                s3.setObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), acl);
+                return true;
+            }
+            return false;
+        } catch (AmazonClientException e) {
+            Logger.error("subir.archivo", wrapAmazonException(e, "Subir archivo"));
+            return false;
         }
-        return false;
     }
 
     public static ObjectListing getObjetos(BucketConfig bucketConfig, String fullpath) {
-        if (fullpath.isEmpty()) {
-            return getRaiz(bucketConfig);
-        } else {
-            AmazonS3 s3 = getAmazonS3(bucketConfig);
-            return s3.listObjects(bucketConfig.getBucketName(), fullpath);
+        try {
+            if (fullpath.isEmpty()) {
+                return getRaiz(bucketConfig);
+            } else {
+                AmazonS3 s3 = getAmazonS3(bucketConfig);
+                return s3.listObjects(bucketConfig.getBucketName(), fullpath);
+            }
+        } catch (AmazonClientException e) {
+            Growls.mostrarError("cargar.archivos.bucket", wrapAmazonException(e, "Listar objetos"));
+            return new ObjectListing();
         }
     }
 
     public static void actualizarCarpeta(S3Folder folder, ObjectListing elementos) {
         for (S3ObjectSummary s3ObjectSummary : elementos.getObjectSummaries()) {
-            String rutaObjeto = StringUtils.remove(s3ObjectSummary.getKey(), folder.getFullpath());
+            String rutaObjeto = Strings.CS.remove(s3ObjectSummary.getKey(), folder.getFullpath());
             if (!rutaObjeto.isEmpty()) {
                 if (rutaObjeto.endsWith("/")) {
                     String[] ruta = rutaObjeto.split("/");
@@ -98,29 +116,41 @@ public class UtilidadesS3 {
     }
 
     public static void deleteObject(BucketConfig bucketConfig, S3File s3File) {
-        AmazonS3 s3 = getAmazonS3(bucketConfig);
-        s3.deleteObject(new DeleteObjectRequest(bucketConfig.getBucketName(), s3File.getFullPath()));
-        Growls.mostrarInfo("archivo.eliminado.correctamente");
+        try {
+            AmazonS3 s3 = getAmazonS3(bucketConfig);
+            s3.deleteObject(new DeleteObjectRequest(bucketConfig.getBucketName(), s3File.getFullPath()));
+            Growls.mostrarInfo("archivo.eliminado.correctamente");
+        } catch (AmazonClientException e) {
+            Growls.mostrarError("eliminar.archivo", wrapAmazonException(e, "Eliminar archivo"));
+        }
     }
 
     public static List<S3FileVersion> getVersiones(BucketConfig bucketConfig, S3File s3File) {
         AmazonS3 s3 = getAmazonS3(bucketConfig);
-        List<S3VersionSummary> versiones = s3.listVersions(new ListVersionsRequest(bucketConfig.getBucketName(), s3File.getFullPath(), null, null, null, 10)).getVersionSummaries();
         List<S3FileVersion> s3FileVersions = new ArrayList<>();
-        for (S3VersionSummary versionSummary : versiones) {
-            S3FileVersion s3FileVersion = new S3FileVersion();
-            s3FileVersion.setId(versionSummary.getVersionId());
-            s3FileVersion.setFecha(versionSummary.getLastModified());
-            s3FileVersion.setS3File(s3File);
-            s3FileVersions.add(s3FileVersion);
+        try {
+            List<S3VersionSummary> versiones = s3.listVersions(new ListVersionsRequest(bucketConfig.getBucketName(), s3File.getFullPath(), null, null, null, 10)).getVersionSummaries();
+            for (S3VersionSummary versionSummary : versiones) {
+                S3FileVersion s3FileVersion = new S3FileVersion();
+                s3FileVersion.setId(versionSummary.getVersionId());
+                s3FileVersion.setFecha(versionSummary.getLastModified());
+                s3FileVersion.setS3File(s3File);
+                s3FileVersions.add(s3FileVersion);
+            }
+        } catch (AmazonClientException e) {
+            Growls.mostrarError("cargar.versiones", wrapAmazonException(e, "Listar versiones"));
         }
         return s3FileVersions;
     }
 
     public static void elimninarVersion(BucketConfig bucketConfig, S3File s3File, S3FileVersion s3FileVersion) {
-        AmazonS3 s3 = getAmazonS3(bucketConfig);
-        s3.deleteVersion(new DeleteVersionRequest(bucketConfig.getBucketName(), s3File.getFullPath(), s3FileVersion.getId()));
-        Growls.mostrarInfo("version.eliminada.correctamente");
+        try {
+            AmazonS3 s3 = getAmazonS3(bucketConfig);
+            s3.deleteVersion(new DeleteVersionRequest(bucketConfig.getBucketName(), s3File.getFullPath(), s3FileVersion.getId()));
+            Growls.mostrarInfo("version.eliminada.correctamente");
+        } catch (AmazonClientException e) {
+            Growls.mostrarError("eliminar.version", wrapAmazonException(e, "Eliminar version"));
+        }
     }
 
     public static void getObject(MainUI ventana, BucketConfig bucketConfig, S3FileVersion fileVersion) {
@@ -129,10 +159,16 @@ public class UtilidadesS3 {
         int retorno = fc.showSaveDialog(ventana);
         if (retorno == JFileChooser.APPROVE_OPTION) {
             ventana.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            File directorio = fc.getSelectedFile();
-            AmazonS3 s3 = getAmazonS3(bucketConfig);
-            S3Object s3Object = s3.getObject(new GetObjectRequest(bucketConfig.getBucketName(), fileVersion.getS3File().getFullPath(), fileVersion.getId()));
-            download(ventana, directorio, s3Object, getDownloadName(fileVersion));
+            try {
+                File directorio = fc.getSelectedFile();
+                AmazonS3 s3 = getAmazonS3(bucketConfig);
+                S3Object s3Object = s3.getObject(new GetObjectRequest(bucketConfig.getBucketName(), fileVersion.getS3File().getFullPath(), fileVersion.getId()));
+                download(directorio, s3Object, getDownloadName(fileVersion));
+            } catch (AmazonClientException e) {
+                Growls.mostrarError("descargar.archivo", wrapAmazonException(e, "Descargar archivo"));
+            } finally {
+                ventana.setCursor(null);
+            }
         }
     }
 
@@ -149,7 +185,7 @@ public class UtilidadesS3 {
                 fileVersion.getS3File().getName();
     }
 
-    private static void download(MainUI ventana, File directorio, S3Object s3Object, String nombre) {
+    private static void download(File directorio, S3Object s3Object, String nombre) {
         InputStream in = s3Object.getObjectContent();
         byte[] buf = new byte[1024];
         try (OutputStream out = Files.newOutputStream(new File(directorio.getAbsolutePath() +
@@ -168,8 +204,6 @@ public class UtilidadesS3 {
         } catch (InterruptedException e) {
             Growls.mostrarError("descargar.archivo", e);
             Thread.currentThread().interrupt();
-        } finally {
-            ventana.setCursor(null);
         }
     }
 
@@ -177,16 +211,35 @@ public class UtilidadesS3 {
         AmazonS3 s3 = getAmazonS3(configuracion.getBucketConfig());
         List<File> errors = new ArrayList<>();
         for (File file : files) {
-            PutObjectRequest request = new PutObjectRequest(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), file);
-            if (s3.putObject(request) != null) {
-                AccessControlList acl = s3.getObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName());
-                configuracion.getCannonicalIds().forEach(c ->
-                        acl.grantPermission(new CanonicalGrantee(c.getId()), Permission.Read));
-                s3.setObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), acl);
-            } else {
+            try {
+                PutObjectRequest request = new PutObjectRequest(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), file);
+                if (s3.putObject(request) != null) {
+                    AccessControlList acl = s3.getObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName());
+                    configuracion.getCannonicalIds().forEach(c ->
+                            acl.grantPermission(new CanonicalGrantee(c.getId()), Permission.Read));
+                    s3.setObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), acl);
+                } else {
+                    errors.add(file);
+                }
+            } catch (AmazonClientException e) {
                 errors.add(file);
+                Logger.error("subir.archivo", wrapAmazonException(e, "Subir archivo"));
             }
         }
         return errors;
+    }
+
+    private static Exception wrapAmazonException(Exception e, String contexto) {
+        if (e instanceof AmazonServiceException) {
+            AmazonServiceException ase = (AmazonServiceException) e;
+            String detalle = contexto + " (status=" + ase.getStatusCode() + ", code=" + ase.getErrorCode()
+                    + ", requestId=" + ase.getRequestId() + ")";
+            return new IOException(detalle, e);
+        }
+        if (e instanceof AmazonClientException) {
+            String detalle = contexto + " (cliente AWS)";
+            return new IOException(detalle, e);
+        }
+        return e;
     }
 }

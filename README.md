@@ -48,7 +48,6 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
   * Actualización de dependencias: `commons-lang3` a 3.18.0 y `firebase-admin` a 9.7.0
 
 * 0.9.0
-
   * Drag&Drop de archivos
   * Homogeneizar el tamaño de los elementos del explorador de archivos y carpetas
   * Scroll vertical cuando sea necesario
@@ -56,77 +55,60 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
   * Correciones de seguridad y estabilidad
 
 * 0.8.0
-
     * Opción de descarga de una versión anterior.
     * Mensaje de confirmación antes de eliminar un archivo o versión.
 
 * 0.7.0
-
     * Mostrar versiones anteriores de un archivo para volver a una versión anterior.
 
 * 0.6.0
-
     * Se permite dar permisos a otras cuentas AWS para que tengan acceso a los archivos que subimos al bucket.
 
 * 0.5.4
-
     * Correciones de seguridad y estabilidad
 
 * 0.5.3
-
     * Correciones de seguridad.
 
 * 0.5.2
-
     * Actualización de seguridad de despendencias.
 
 * 0.5.1
-
     * Actualización de seguridad de la librería de Jackson
 
 * 0.5.0
-
     * Eliminamos dependencia de Java-Gnome por innecesaria
 
 * 0.4.1
-
     * Añadimos compatibilidad con entornos de escritorios Linux no GTK.
 
 * 0.4.0
-
     * A partir de ahora es necesario Java 11.
     * Eliminamos ControlFX por problemas de compatibilidad con OpenJDK 11 y en su lugar utilizamos Systray en S.O Windows
     (sin testear, por lo que es posible que pueda fallar) y Java-Gnome en S.O Linux (No es necesario que el entrono de
     escritorio sea Gnome, con tener libNotify instalado en el sistema, debe funcionar).    
 
 * 0.3.1
-
     * Correccón de error al tratar los archivos json de configuración.
 
 * 0.3.0
-
     * Se elimina el icono de Systray, por la incompatibilidad con Gnome3 y utilizamos ControlsFX para monstrar las 
     notificaciones.
 
 * 0.2.2
-
     * Se añade icono para los archivos comprimidos
     * Cambio del color del icono de subida y bajada de archivos para que se vean mejor sobre fondos claros
 
 * 0.2.1
-
     * Eliminar archivos de logs vacios
 
 * 0.2.0
-
     * Añadido menú contextual en los archivos para poder descargarlos o eliminarlos
 
 * 0.1.1
-
     * Mostrar el cursor de ocupado mientras se esta subiendo un archivo
 
 * 0.1.0
-
     * Sincronización continua de las carpetas
 
 ### Licencia ### 

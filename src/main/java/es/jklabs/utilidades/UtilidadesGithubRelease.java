@@ -197,7 +197,7 @@ public class UtilidadesGithubRelease {
         conn.setReadTimeout(10000);
         int status = conn.getResponseCode();
         if (status < 200 || status >= 300) {
-            throw new IOException("Respuesta API GitHub: " + status);
+            throw new IOException("Respuesta API GitHub: " + status + " " + conn.getResponseMessage());
         }
         try (InputStream in = conn.getInputStream()) {
             return MAPPER.readValue(in, GitHubRelease.class);
@@ -207,6 +207,12 @@ public class UtilidadesGithubRelease {
     private static InputStream abrirStreamDescarga(String urlDescarga) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) new URL(urlDescarga).openConnection();
         conn.setRequestProperty("User-Agent", Constantes.NOMBRE_APP);
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(10000);
+        int status = conn.getResponseCode();
+        if (status < 200 || status >= 300) {
+            throw new IOException("Respuesta descarga GitHub: " + status + " " + conn.getResponseMessage());
+        }
         return conn.getInputStream();
     }
 }
