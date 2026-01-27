@@ -2,21 +2,34 @@ package es.jklabs.utilidades;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.S3VersionSummary;
+import com.amazonaws.services.s3.model.VersionListing;
+import es.jklabs.json.configuracion.BucketConfig;
 import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3FileVersion;
 import es.jklabs.s3.model.S3Folder;
+import org.junit.After;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class UtilidadesS3Test {
+
+    @After
+    public void cleanup() {
+        UtilidadesS3.clearAmazonS3ForTest();
+    }
 
     @Test
     public void actualizarCarpetaAgregaCarpetasYArchivos() {
@@ -35,9 +48,9 @@ public class UtilidadesS3Test {
         UtilidadesS3.actualizarCarpeta(raiz, listing);
 
         assertEquals(1, raiz.getS3Forlders().size());
-        assertEquals("folder1", raiz.getS3Forlders().get(0).getName());
+        assertEquals("folder1", raiz.getS3Forlders().getFirst().getName());
         assertEquals(1, raiz.getS3Files().size());
-        assertEquals("file1.txt", raiz.getS3Files().get(0).getName());
+        assertEquals("file1.txt", raiz.getS3Files().getFirst().getName());
     }
 
     @Test
@@ -93,5 +106,72 @@ public class UtilidadesS3Test {
         Exception wrapped = (Exception) method.invoke(null, original, "Test");
 
         assertSame(original, wrapped);
+    }
+
+    @Test
+    public void getObjetosPaginaTodosLosResultados() {
+        AmazonS3 s3 = mock(AmazonS3.class);
+        UtilidadesS3.setAmazonS3ForTest(s3);
+        BucketConfig bucketConfig = new BucketConfig();
+        bucketConfig.setBucketName("bucket");
+
+        ObjectListing page1 = new ObjectListing();
+        page1.setTruncated(true);
+        S3ObjectSummary obj1 = new S3ObjectSummary();
+        obj1.setKey("prefix/a.txt");
+        page1.getObjectSummaries().add(obj1);
+
+        ObjectListing page2 = new ObjectListing();
+        page2.setTruncated(false);
+        S3ObjectSummary obj2 = new S3ObjectSummary();
+        obj2.setKey("prefix/b.txt");
+        page2.getObjectSummaries().add(obj2);
+
+        when(s3.listObjects("bucket", "prefix/")).thenReturn(page1);
+        when(s3.listNextBatchOfObjects(page1)).thenReturn(page2);
+
+        ObjectListing resultado = UtilidadesS3.getObjetos(bucketConfig, "prefix/");
+
+        assertEquals(2, resultado.getObjectSummaries().size());
+        assertEquals("prefix/a.txt", resultado.getObjectSummaries().get(0).getKey());
+        assertEquals("prefix/b.txt", resultado.getObjectSummaries().get(1).getKey());
+        verify(s3).listNextBatchOfObjects(page1);
+    }
+
+    @Test
+    public void crearPaginadorVersionesPaginaBajoDemanda() {
+        AmazonS3 s3 = mock(AmazonS3.class);
+        UtilidadesS3.setAmazonS3ForTest(s3);
+        BucketConfig bucketConfig = new BucketConfig();
+        bucketConfig.setBucketName("bucket");
+        S3File s3File = new S3File("file.txt", "file.txt");
+
+        VersionListing page1 = new VersionListing();
+        page1.setTruncated(true);
+        S3VersionSummary v1 = new S3VersionSummary();
+        v1.setVersionId("v1");
+        page1.getVersionSummaries().add(v1);
+
+        VersionListing page2 = new VersionListing();
+        page2.setTruncated(false);
+        S3VersionSummary v2 = new S3VersionSummary();
+        v2.setVersionId("v2");
+        page2.getVersionSummaries().add(v2);
+
+        when(s3.listVersions(any())).thenReturn(page1);
+        when(s3.listNextBatchOfVersions(page1)).thenReturn(page2);
+
+        UtilidadesS3.PaginadorVersiones paginador = UtilidadesS3.crearPaginadorVersiones(bucketConfig, s3File, 10);
+
+        List<S3FileVersion> primera = paginador.nextPage();
+        List<S3FileVersion> segunda = paginador.nextPage();
+
+        assertEquals(1, primera.size());
+        assertEquals("v1", primera.get(0).getId());
+        assertEquals(1, segunda.size());
+        assertEquals("v2", segunda.get(0).getId());
+        assertEquals(false, paginador.hasMore());
+        verify(s3).listVersions(any());
+        verify(s3).listNextBatchOfVersions(page1);
     }
 }

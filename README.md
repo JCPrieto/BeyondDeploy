@@ -4,7 +4,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Requisitos ###
 
-* Java 8
+* Java 21
 * LibNotify (Para las notificaciones en Linux)
 
 ### Ejecución ###

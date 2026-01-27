@@ -29,16 +29,21 @@ import java.util.List;
 
 public class UtilidadesS3 {
 
+    private static AmazonS3 amazonS3Override;
+
     private UtilidadesS3() {
 
     }
 
     private static ObjectListing getRaiz(BucketConfig bucketConfig) {
         AmazonS3 s3 = getAmazonS3(bucketConfig);
-        return s3.listObjects(bucketConfig.getBucketName());
+        return listarTodosObjetos(s3, bucketConfig.getBucketName(), null);
     }
 
     private static AmazonS3 getAmazonS3(BucketConfig bucketConfig) {
+        if (amazonS3Override != null) {
+            return amazonS3Override;
+        }
         String secretKey;
         try {
             secretKey = UtilidadesEncryptacion.decrypt(bucketConfig.getSecretKey());
@@ -96,7 +101,7 @@ public class UtilidadesS3 {
                 return getRaiz(bucketConfig);
             } else {
                 AmazonS3 s3 = getAmazonS3(bucketConfig);
-                return s3.listObjects(bucketConfig.getBucketName(), fullpath);
+                return listarTodosObjetos(s3, bucketConfig.getBucketName(), fullpath);
             }
         } catch (AmazonClientException e) {
             Growls.mostrarError("cargar.archivos.bucket", wrapAmazonException(e, "Listar objetos"));
@@ -128,24 +133,6 @@ public class UtilidadesS3 {
         } catch (AmazonClientException e) {
             Growls.mostrarError("eliminar.archivo", wrapAmazonException(e, "Eliminar archivo"));
         }
-    }
-
-    public static List<S3FileVersion> getVersiones(BucketConfig bucketConfig, S3File s3File) {
-        AmazonS3 s3 = getAmazonS3(bucketConfig);
-        List<S3FileVersion> s3FileVersions = new ArrayList<>();
-        try {
-            List<S3VersionSummary> versiones = s3.listVersions(new ListVersionsRequest(bucketConfig.getBucketName(), s3File.getFullPath(), null, null, null, 10)).getVersionSummaries();
-            for (S3VersionSummary versionSummary : versiones) {
-                S3FileVersion s3FileVersion = new S3FileVersion();
-                s3FileVersion.setId(versionSummary.getVersionId());
-                s3FileVersion.setFecha(versionSummary.getLastModified());
-                s3FileVersion.setS3File(s3File);
-                s3FileVersions.add(s3FileVersion);
-            }
-        } catch (AmazonClientException e) {
-            Growls.mostrarError("cargar.versiones", wrapAmazonException(e, "Listar versiones"));
-        }
-        return s3FileVersions;
     }
 
     public static void elimninarVersion(BucketConfig bucketConfig, S3File s3File, S3FileVersion s3FileVersion) {
@@ -235,8 +222,7 @@ public class UtilidadesS3 {
     }
 
     private static Exception wrapAmazonException(Exception e, String contexto) {
-        if (e instanceof AmazonServiceException) {
-            AmazonServiceException ase = (AmazonServiceException) e;
+        if (e instanceof AmazonServiceException ase) {
             String detalle = contexto + " (status=" + ase.getStatusCode() + ", code=" + ase.getErrorCode()
                     + ", requestId=" + ase.getRequestId() + ")";
             return new IOException(detalle, e);
@@ -246,5 +232,93 @@ public class UtilidadesS3 {
             return new IOException(detalle, e);
         }
         return e;
+    }
+
+    private static ObjectListing listarTodosObjetos(AmazonS3 s3, String bucket, String prefix) {
+        ObjectListing listing = prefix == null
+                ? s3.listObjects(bucket)
+                : s3.listObjects(bucket, prefix);
+        ObjectListing acumulado = listing;
+        while (listing.isTruncated()) {
+            listing = s3.listNextBatchOfObjects(listing);
+            if (listing.getObjectSummaries() != null) {
+                acumulado.getObjectSummaries().addAll(listing.getObjectSummaries());
+            }
+        }
+        return acumulado;
+    }
+
+    public static PaginadorVersiones crearPaginadorVersiones(BucketConfig bucketConfig, S3File s3File, int maxKeys) {
+        return new PaginadorVersiones(getAmazonS3(bucketConfig), bucketConfig.getBucketName(), s3File, maxKeys);
+    }
+
+    private static List<S3FileVersion> convertirVersiones(VersionListing listing, S3File s3File) {
+        List<S3FileVersion> page = new ArrayList<>();
+        if (listing == null) {
+            return page;
+        }
+        for (S3VersionSummary versionSummary : listing.getVersionSummaries()) {
+            S3FileVersion s3FileVersion = new S3FileVersion();
+            s3FileVersion.setId(versionSummary.getVersionId());
+            s3FileVersion.setFecha(versionSummary.getLastModified());
+            s3FileVersion.setS3File(s3File);
+            page.add(s3FileVersion);
+        }
+        return page;
+    }
+
+    static void setAmazonS3ForTest(AmazonS3 amazonS3) {
+        amazonS3Override = amazonS3;
+    }
+
+    static void clearAmazonS3ForTest() {
+        amazonS3Override = null;
+    }
+
+    public static class PaginadorVersiones {
+        private final AmazonS3 s3;
+        private final String bucket;
+        private final S3File s3File;
+        private final int maxKeys;
+        private VersionListing listing;
+        private boolean started;
+        private boolean finished;
+
+        private PaginadorVersiones(AmazonS3 s3, String bucket, S3File s3File, int maxKeys) {
+            this.s3 = s3;
+            this.bucket = bucket;
+            this.s3File = s3File;
+            this.maxKeys = maxKeys;
+        }
+
+        public synchronized List<S3FileVersion> nextPage() {
+            if (finished) {
+                return new ArrayList<>();
+            }
+            try {
+                if (!started) {
+                    listing = s3.listVersions(new ListVersionsRequest(bucket, s3File.getFullPath(), null, null, null, maxKeys));
+                    started = true;
+                } else if (listing != null && listing.isTruncated()) {
+                    listing = s3.listNextBatchOfVersions(listing);
+                } else {
+                    finished = true;
+                    return new ArrayList<>();
+                }
+                List<S3FileVersion> page = convertirVersiones(listing, s3File);
+                if (listing == null || !listing.isTruncated()) {
+                    finished = true;
+                }
+                return page;
+            } catch (AmazonClientException e) {
+                Growls.mostrarError("cargar.versiones", wrapAmazonException(e, "Listar versiones"));
+                finished = true;
+                return new ArrayList<>();
+            }
+        }
+
+        public synchronized boolean hasMore() {
+            return !finished;
+        }
     }
 }

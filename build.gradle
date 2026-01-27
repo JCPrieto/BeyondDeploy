@@ -9,10 +9,10 @@ version '0.10.1'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(8)
+        languageVersion = JavaLanguageVersion.of(21)
     }
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 application {
@@ -41,6 +41,7 @@ repositories {
 
 dependencies {
     testImplementation 'junit:junit:4.13.1'
+    testImplementation 'org.mockito:mockito-core:4.11.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.1'
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.797'
     implementation 'org.apache.commons:commons-lang3:3.20.0'
