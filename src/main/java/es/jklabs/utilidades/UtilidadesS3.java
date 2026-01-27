@@ -191,10 +191,10 @@ public class UtilidadesS3 {
     }
 
     private static void download(File directorio, S3Object s3Object, String nombre) {
-        InputStream in = s3Object.getObjectContent();
         byte[] buf = new byte[1024];
-        try (OutputStream out = Files.newOutputStream(new File(directorio.getAbsolutePath() +
-                UtilidadesFichero.SEPARADOR + nombre).toPath())) {
+        try (InputStream in = s3Object.getObjectContent();
+             OutputStream out = Files.newOutputStream(new File(directorio.getAbsolutePath() +
+                     UtilidadesFichero.SEPARADOR + nombre).toPath())) {
             int count;
             while ((count = in.read(buf)) != -1) {
                 if (Thread.interrupted()) {
