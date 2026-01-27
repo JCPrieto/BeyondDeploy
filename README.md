@@ -33,6 +33,12 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.11.0
+  * Requisito de Java actualizado a 21 y toolchain ajustada en Gradle
+  * Paginación de versiones en S3 con carga bajo demanda en el menú contextual
+  * Manejo de errores S3/GitHub más detallado y mensajes de usuario ampliados
+  * Tests unitarios para cifrado y utilidades S3 con soporte Mockito
+
 * 0.10.1
   * Inicializacion de UI en EDT y tareas de red/configuracion en background para evitar bloqueos
   * Manejo tolerante de cambios en la API de GitHub Releases (campos desconocidos)

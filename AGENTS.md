@@ -17,7 +17,7 @@
 - `./gradlew test` — runs unit tests (JUnit 4). Add tests under `src/test/java/` as the project grows.
 - `./gradlew distZip` — builds a distributable ZIP (see `build/distributions/`).
 
-Note: the wrapper targets Gradle 9; use JDK 17+ to run Gradle tasks reliably.
+Note: the wrapper targets Gradle 9; use JDK 21+ to run Gradle tasks reliably.
 
 ## Coding Style & Naming Conventions
 
