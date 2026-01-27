@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Objects;
 
 public class UtilidadesS3 {
 
@@ -40,8 +39,14 @@ public class UtilidadesS3 {
     }
 
     private static AmazonS3 getAmazonS3(BucketConfig bucketConfig) {
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials(bucketConfig.getAccesKey(),
-                Objects.requireNonNull(UtilidadesEncryptacion.decrypt(bucketConfig.getSecretKey())));
+        String secretKey;
+        try {
+            secretKey = UtilidadesEncryptacion.decrypt(bucketConfig.getSecretKey());
+        } catch (IllegalStateException e) {
+            Growls.mostrarError("secret.key.descifrado", e);
+            throw new AmazonClientException("Error al descifrar Secret Key", e);
+        }
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(bucketConfig.getAccesKey(), secretKey);
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .withRegion(bucketConfig.getRegion())

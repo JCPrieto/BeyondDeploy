@@ -28,8 +28,8 @@ public class UtilidadesEncryptacion {
             return DatatypeConverter.printBase64Binary(encrypted);
         } catch (Exception ex) {
             Logger.error("Encriptar dato", ex);
+            throw new IllegalStateException("Error al encriptar dato", ex);
         }
-        return null;
     }
 
     public static String decrypt(String encrypted) {
@@ -44,8 +44,7 @@ public class UtilidadesEncryptacion {
             return new String(original);
         } catch (Exception ex) {
             Logger.error("Desencriptar dato", ex);
+            throw new IllegalStateException("Error al desencriptar dato", ex);
         }
-
-        return null;
     }
 }
