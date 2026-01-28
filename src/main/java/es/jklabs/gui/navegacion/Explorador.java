@@ -18,19 +18,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.dnd.DropTarget;
 import java.io.File;
+import java.io.Serial;
+import java.util.*;
 import java.util.List;
 import java.util.Timer;
-import java.util.*;
 import java.util.stream.Collectors;
 
 public class Explorador extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = -8285796640106146202L;
     public static final String SUBIR_ARCHIVO = "subir.archivo";
-    private static ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
-    private MainUI padre;
+    private static final ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
+    private final MainUI padre;
     private Explorador anterior;
-    private S3Folder folder;
+    private final S3Folder folder;
     private transient Timer timer;
     private JScrollPane scrollPane;
 
@@ -87,14 +89,29 @@ public class Explorador extends JPanel {
             UtilsCache.setLastUploadFolder(file.getParentFile().getPath());
             padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             this.setEnabled(false);
-            if (UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion())) {
-                Growls.mostrarInfo("subida.realizada");
-            } else {
-                Growls.mostrarAviso(SUBIR_ARCHIVO, SUBIR_ARCHIVO);
-            }
-            this.setEnabled(true);
-            padre.setCursor(null);
-            recargarPantalla();
+            new SwingWorker<Boolean, Void>() {
+                @Override
+                protected Boolean doInBackground() {
+                    return UtilidadesS3.uploadFile(file, folder.getFullpath(), padre.getConfiguracion());
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        if (get()) {
+                            Growls.mostrarInfo("subida.realizada");
+                        } else {
+                            Growls.mostrarAviso(SUBIR_ARCHIVO, SUBIR_ARCHIVO);
+                        }
+                    } catch (Exception e) {
+                        Growls.mostrarAviso(SUBIR_ARCHIVO, SUBIR_ARCHIVO);
+                    } finally {
+                        setEnabled(true);
+                        padre.setCursor(null);
+                        recargarPantalla();
+                    }
+                }
+            }.execute();
         }
     }
 
@@ -191,18 +208,33 @@ public class Explorador extends JPanel {
     public void uploadFile(List<File> files) {
         padre.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         this.setEnabled(false);
-        List<File> errors = UtilidadesS3.uploadFile(files, folder.getFullpath(), padre.getConfiguracion());
-        if (errors.isEmpty()) {
-            Growls.mostrarInfo("subida.realizada");
-        } else if (files.size() != errors.size()) {
-            Growls.mostrarAviso("subida.parcial", "subida.parcial", new String[]{StringUtils.joinWith(", ", errors.stream()
-                    .map(File::getName)
-                    .collect(Collectors.toList()))});
-        } else {
-            Growls.mostrarAviso(SUBIR_ARCHIVO, SUBIR_ARCHIVO);
-        }
-        this.setEnabled(true);
-        padre.setCursor(null);
-        recargarPantalla();
+        new SwingWorker<List<File>, Void>() {
+            @Override
+            protected List<File> doInBackground() {
+                return UtilidadesS3.uploadFile(files, folder.getFullpath(), padre.getConfiguracion());
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<File> errors = get();
+                    if (errors.isEmpty()) {
+                        Growls.mostrarInfo("subida.realizada");
+                    } else if (files.size() != errors.size()) {
+                        Growls.mostrarAviso("subida.parcial", "subida.parcial", new String[]{StringUtils.joinWith(", ", errors.stream()
+                                .map(File::getName)
+                                .collect(Collectors.toList()))});
+                    } else {
+                        Growls.mostrarAviso(SUBIR_ARCHIVO, SUBIR_ARCHIVO);
+                    }
+                } catch (Exception e) {
+                    Growls.mostrarAviso(SUBIR_ARCHIVO, SUBIR_ARCHIVO);
+                } finally {
+                    setEnabled(true);
+                    padre.setCursor(null);
+                    recargarPantalla();
+                }
+            }
+        }.execute();
     }
 }

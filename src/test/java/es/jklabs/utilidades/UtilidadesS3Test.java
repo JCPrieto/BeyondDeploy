@@ -3,32 +3,44 @@ package es.jklabs.utilidades;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.model.S3VersionSummary;
-import com.amazonaws.services.s3.model.VersionListing;
+import com.amazonaws.services.s3.model.*;
+import es.jklabs.gui.MainUI;
 import es.jklabs.json.configuracion.BucketConfig;
+import es.jklabs.json.configuracion.CannonicalId;
+import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.s3.model.S3File;
 import es.jklabs.s3.model.S3FileVersion;
 import es.jklabs.s3.model.S3Folder;
 import org.junit.After;
 import org.junit.Test;
 
+import javax.swing.*;
+import java.awt.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class UtilidadesS3Test {
 
-    @After
-    public void cleanup() {
-        UtilidadesS3.clearAmazonS3ForTest();
+    private static boolean esperarArchivo(File archivo) throws InterruptedException {
+        int intentos = 0;
+        while (intentos < 50 && !archivo.exists()) {
+            Thread.sleep(50);
+            intentos++;
+        }
+        return archivo.exists();
     }
 
     @Test
@@ -138,6 +150,24 @@ public class UtilidadesS3Test {
         verify(s3).listNextBatchOfObjects(page1);
     }
 
+    private static File[] esperarArchivoConPrefijo(File directorio, String sufijo) throws InterruptedException {
+        int intentos = 0;
+        File[] archivos = directorio.listFiles((dir, name) -> name.endsWith(sufijo));
+        while (intentos < 50 && (archivos == null || archivos.length == 0)) {
+            Thread.sleep(50);
+            archivos = directorio.listFiles((dir, name) -> name.endsWith(sufijo));
+            intentos++;
+        }
+        return archivos;
+    }
+
+    @After
+    public void cleanup() {
+        UtilidadesS3.clearAmazonS3ForTest();
+        UtilidadesS3.clearFileChooserProviderForTest();
+        UtilidadesS3.clearProgressHandlerForTest();
+    }
+
     @Test
     public void crearPaginadorVersionesPaginaBajoDemanda() {
         AmazonS3 s3 = mock(AmazonS3.class);
@@ -167,11 +197,181 @@ public class UtilidadesS3Test {
         List<S3FileVersion> segunda = paginador.nextPage();
 
         assertEquals(1, primera.size());
-        assertEquals("v1", primera.get(0).getId());
+        assertEquals("v1", primera.getFirst().getId());
         assertEquals(1, segunda.size());
-        assertEquals("v2", segunda.get(0).getId());
-        assertEquals(false, paginador.hasMore());
+        assertEquals("v2", segunda.getFirst().getId());
+        assertFalse(paginador.hasMore());
         verify(s3).listVersions(any());
         verify(s3).listNextBatchOfVersions(page1);
+    }
+
+    @Test
+    public void getObjectDescargaArchivoEnDirectorioSeleccionado() throws Exception {
+        AmazonS3 s3 = mock(AmazonS3.class);
+        UtilidadesS3.setAmazonS3ForTest(s3);
+        BucketConfig bucketConfig = new BucketConfig();
+        bucketConfig.setBucketName("bucket");
+        S3File s3File = new S3File("archivo.txt", "folder/archivo.txt");
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(1024);
+        when(s3.getObjectMetadata("bucket", "folder/archivo.txt")).thenReturn(metadata);
+
+        S3Object s3Object = new S3Object();
+        s3Object.setObjectContent(new ByteArrayInputStream("hola".getBytes(StandardCharsets.UTF_8)));
+        when(s3.getObject("bucket", "folder/archivo.txt")).thenReturn(s3Object);
+
+        File directorio = Files.createTempDirectory("s3-download").toFile();
+        UtilidadesS3.setFileChooserProviderForTest(new TestFileChooserProvider(directorio));
+
+        UtilidadesS3.getObject(mock(MainUI.class), bucketConfig, s3File);
+
+        File descargado = new File(directorio, "archivo.txt");
+        assertTrue(esperarArchivo(descargado));
+        assertEquals("hola", Files.readString(descargado.toPath(), StandardCharsets.UTF_8));
+        verify(s3).getObject("bucket", "folder/archivo.txt");
+    }
+
+    @Test
+    public void getObjectVersionDescargaArchivoEnDirectorioSeleccionado() throws Exception {
+        AmazonS3 s3 = mock(AmazonS3.class);
+        UtilidadesS3.setAmazonS3ForTest(s3);
+        BucketConfig bucketConfig = new BucketConfig();
+        bucketConfig.setBucketName("bucket");
+        S3File s3File = new S3File("archivo.txt", "folder/archivo.txt");
+        S3FileVersion version = new S3FileVersion();
+        version.setId("v1");
+        version.setFecha(new GregorianCalendar(2024, Calendar.JANUARY, 2, 3, 4, 5).getTime());
+        version.setS3File(s3File);
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(1024);
+        when(s3.getObjectMetadata(any(GetObjectMetadataRequest.class))).thenReturn(metadata);
+
+        S3Object s3Object = new S3Object();
+        s3Object.setObjectContent(new ByteArrayInputStream("version".getBytes(StandardCharsets.UTF_8)));
+        when(s3.getObject(any(com.amazonaws.services.s3.model.GetObjectRequest.class))).thenReturn(s3Object);
+
+        File directorio = Files.createTempDirectory("s3-download-version").toFile();
+        UtilidadesS3.setFileChooserProviderForTest(new TestFileChooserProvider(directorio));
+
+        UtilidadesS3.getObject(mock(MainUI.class), bucketConfig, version);
+
+        File[] archivos = esperarArchivoConPrefijo(directorio, "_archivo.txt");
+        assertNotNull(archivos);
+        assertEquals(1, archivos.length);
+        assertEquals("version", Files.readString(archivos[0].toPath(), StandardCharsets.UTF_8));
+        verify(s3).getObject(any(com.amazonaws.services.s3.model.GetObjectRequest.class));
+    }
+
+    @Test
+    public void uploadFileSubeArchivoYAplicaPermisos() throws Exception {
+        AmazonS3 s3 = mock(AmazonS3.class);
+        UtilidadesS3.setAmazonS3ForTest(s3);
+        BucketConfig bucketConfig = new BucketConfig();
+        bucketConfig.setBucketName("bucket");
+        Configuracion configuracion = new Configuracion();
+        configuracion.setBucketConfig(bucketConfig);
+        configuracion.setCannonicalIds(List.of(new CannonicalId("demo", "id-1")));
+
+        File file = Files.createTempFile("s3-upload", ".txt").toFile();
+        Files.writeString(file.toPath(), "contenido", StandardCharsets.UTF_8);
+
+        when(s3.putObject(any(PutObjectRequest.class))).thenReturn(new PutObjectResult());
+        when(s3.getObjectAcl(eq("bucket"), eq("prefix/" + file.getName()))).thenReturn(new AccessControlList());
+
+        boolean resultado = UtilidadesS3.uploadFile(file, "prefix/", configuracion);
+
+        assertTrue(resultado);
+        verify(s3).putObject(any(PutObjectRequest.class));
+        verify(s3).setObjectAcl(eq("bucket"), eq("prefix/" + file.getName()), any(AccessControlList.class));
+    }
+
+    @Test
+    public void uploadFileListaSubeArchivosYAplicaPermisos() throws Exception {
+        AmazonS3 s3 = mock(AmazonS3.class);
+        UtilidadesS3.setAmazonS3ForTest(s3);
+        BucketConfig bucketConfig = new BucketConfig();
+        bucketConfig.setBucketName("bucket");
+        Configuracion configuracion = new Configuracion();
+        configuracion.setBucketConfig(bucketConfig);
+        configuracion.setCannonicalIds(List.of(new CannonicalId("demo", "id-1")));
+
+        File file1 = Files.createTempFile("s3-upload-1", ".txt").toFile();
+        File file2 = Files.createTempFile("s3-upload-2", ".txt").toFile();
+        Files.writeString(file1.toPath(), "uno", StandardCharsets.UTF_8);
+        Files.writeString(file2.toPath(), "dos", StandardCharsets.UTF_8);
+
+        when(s3.putObject(any(PutObjectRequest.class))).thenReturn(new PutObjectResult());
+        when(s3.getObjectAcl(eq("bucket"), any(String.class))).thenReturn(new AccessControlList());
+
+        List<File> errores = UtilidadesS3.uploadFile(List.of(file1, file2), "prefix/", configuracion);
+
+        assertTrue(errores.isEmpty());
+        verify(s3, times(2)).putObject(any(PutObjectRequest.class));
+        verify(s3, times(2)).setObjectAcl(eq("bucket"), any(String.class), any(AccessControlList.class));
+    }
+
+    @Test
+    public void setProgressHandlerAsignaInstanciaPersonalizada() throws Exception {
+        UtilidadesS3.ProgressHandler handler = new UtilidadesS3.ProgressHandler() {
+            @Override
+            public void onStart(String accion, String nombre) {
+            }
+
+            @Override
+            public void onProgress(int porcentaje, String accion, String nombre) {
+            }
+
+            @Override
+            public void onFinish(boolean ok, String accion, String nombre) {
+            }
+        };
+
+        UtilidadesS3.setProgressHandler(handler);
+
+        Field field = UtilidadesS3.class.getDeclaredField("progressHandler");
+        field.setAccessible(true);
+        Object actual = field.get(null);
+        assertSame(handler, actual);
+    }
+
+    @Test
+    public void setProgressHandlerConNullRestauraDefault() throws Exception {
+        UtilidadesS3.setProgressHandler(null);
+
+        Field field = UtilidadesS3.class.getDeclaredField("progressHandler");
+        field.setAccessible(true);
+        Object actual = field.get(null);
+        assertNotNull(actual);
+        assertEquals("DefaultProgressHandler", actual.getClass().getSimpleName());
+    }
+
+    private static class TestFileChooserProvider implements UtilidadesS3.FileChooserProvider {
+        private final File directorio;
+
+        private TestFileChooserProvider(File directorio) {
+            this.directorio = directorio;
+        }
+
+        @Override
+        public JFileChooser createDirectoryChooser() {
+            return new JFileChooser() {
+                @Override
+                public File getSelectedFile() {
+                    return directorio;
+                }
+
+                @Override
+                public void setSelectedFile(File file) {
+                    // no-op para evitar efectos colaterales en tests headless
+                }
+            };
+        }
+
+        @Override
+        public int showSaveDialog(JFileChooser chooser, Component parent) {
+            return JFileChooser.APPROVE_OPTION;
+        }
     }
 }

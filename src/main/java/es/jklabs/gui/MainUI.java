@@ -15,14 +15,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Objects;
 
 public class MainUI extends JFrame {
 
+    @Serial
     private static final long serialVersionUID = 7929656351162697237L;
     private Configuracion configuracion;
     private JPanel panelCentral;
     private S3Folder raiz;
+    private JProgressBar progressBar;
+    private Timer progressHideTimer;
 
     public MainUI(Configuracion configuracion) {
         this();
@@ -38,6 +42,7 @@ public class MainUI extends JFrame {
         super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(500, 500));
         cargarMenu();
+        UtilidadesS3.setProgressHandler(new UiProgressHandler());
     }
 
     private void cargarPanelCentral() {
@@ -62,6 +67,7 @@ public class MainUI extends JFrame {
         super.setLayout(new BorderLayout());
         cargarPanelCentral();
         super.add(panelCentral, BorderLayout.CENTER);
+        super.add(crearPanelEstado(), BorderLayout.SOUTH);
     }
 
     private void cargarMenu() {
@@ -185,4 +191,91 @@ public class MainUI extends JFrame {
         return raiz;
     }
 
+    private JPanel crearPanelEstado() {
+        JPanel panelEstado = new JPanel(new BorderLayout());
+        JPanel panelDerecha = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setStringPainted(true);
+        progressBar.setString("Listo");
+        progressBar.setValue(0);
+        progressBar.setVisible(false);
+        progressBar.setPreferredSize(new Dimension(200, 18));
+        panelDerecha.add(progressBar);
+        panelEstado.add(panelDerecha, BorderLayout.EAST);
+        return panelEstado;
+    }
+
+    private void actualizarProgresoInicio(String accion, String nombre) {
+        SwingUtilities.invokeLater(() -> {
+            if (progressBar == null) {
+                return;
+            }
+            detenerOcultado();
+            progressBar.setIndeterminate(false);
+            progressBar.setValue(0);
+            progressBar.setString(accion + ": " + nombre);
+            progressBar.setVisible(true);
+        });
+    }
+
+    private void actualizarProgreso(int porcentaje, String accion, String nombre) {
+        SwingUtilities.invokeLater(() -> {
+            if (progressBar == null) {
+                return;
+            }
+            detenerOcultado();
+            progressBar.setIndeterminate(false);
+            progressBar.setValue(porcentaje);
+            progressBar.setString(accion + " " + porcentaje + "%: " + nombre);
+            progressBar.setVisible(true);
+        });
+    }
+
+    private void actualizarProgresoFin(boolean ok, String accion, String nombre) {
+        SwingUtilities.invokeLater(() -> {
+            if (progressBar == null) {
+                return;
+            }
+            progressBar.setIndeterminate(false);
+            progressBar.setValue(ok ? 100 : 0);
+            progressBar.setString(accion + (ok ? " completada: " : " fallida: ") + nombre);
+            programarOcultado();
+        });
+    }
+
+    private void detenerOcultado() {
+        if (progressHideTimer != null && progressHideTimer.isRunning()) {
+            progressHideTimer.stop();
+        }
+    }
+
+    private void programarOcultado() {
+        detenerOcultado();
+        progressHideTimer = new Timer(1500, e -> {
+            if (progressBar != null) {
+                progressBar.setVisible(false);
+                progressBar.setValue(0);
+                progressBar.setString("Listo");
+            }
+        });
+        progressHideTimer.setRepeats(false);
+        progressHideTimer.start();
+    }
+
+    private class UiProgressHandler implements UtilidadesS3.ProgressHandler {
+        @Override
+        public void onStart(String accion, String nombre) {
+            actualizarProgresoInicio(accion, nombre);
+        }
+
+        @Override
+        public void onProgress(int porcentaje, String accion, String nombre) {
+            actualizarProgreso(porcentaje, accion, nombre);
+        }
+
+        @Override
+        public void onFinish(boolean ok, String accion, String nombre) {
+            actualizarProgresoFin(ok, accion, nombre);
+        }
+    }
 }

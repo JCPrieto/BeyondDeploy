@@ -7,6 +7,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.transfer.*;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.BucketConfig;
@@ -29,7 +30,15 @@ import java.util.List;
 
 public class UtilidadesS3 {
 
+    private static final long TRANSFER_MANAGER_MIN_SIZE = 16L * 1024 * 1024;
+    private static final int PROGRESS_STEP_PERCENT = 10;
     private static AmazonS3 amazonS3Override;
+    private static AmazonS3 amazonS3Cache;
+    private static String amazonS3CacheKey;
+    private static TransferManager transferManagerCache;
+    private static String transferManagerCacheKey;
+    private static FileChooserProvider fileChooserProvider = new DefaultFileChooserProvider();
+    private static ProgressHandler progressHandler = new DefaultProgressHandler();
 
     private UtilidadesS3() {
 
@@ -44,6 +53,10 @@ public class UtilidadesS3 {
         if (amazonS3Override != null) {
             return amazonS3Override;
         }
+        String cacheKey = getCacheKey(bucketConfig);
+        if (amazonS3Cache != null && cacheKey.equals(amazonS3CacheKey)) {
+            return amazonS3Cache;
+        }
         String secretKey;
         try {
             secretKey = UtilidadesEncryptacion.decrypt(bucketConfig.getSecretKey());
@@ -52,28 +65,45 @@ public class UtilidadesS3 {
             throw new AmazonClientException("Error al descifrar Secret Key", e);
         }
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(bucketConfig.getAccesKey(), secretKey);
-        return AmazonS3ClientBuilder.standard()
+        AmazonS3 s3 = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .withRegion(bucketConfig.getRegion())
                 .build();
+        amazonS3Cache = s3;
+        amazonS3CacheKey = cacheKey;
+        return s3;
     }
 
     public static void getObject(MainUI ventana, BucketConfig bucketConfig, S3File file) {
-        JFileChooser fc = new JFileChooser();
-        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int retorno = fc.showSaveDialog(ventana);
+        JFileChooser fc = fileChooserProvider.createDirectoryChooser();
+        int retorno = fileChooserProvider.showSaveDialog(fc, ventana);
         if (retorno == JFileChooser.APPROVE_OPTION) {
             ventana.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            try {
-                File directorio = fc.getSelectedFile();
-                AmazonS3 s3 = getAmazonS3(bucketConfig);
-                S3Object s3Object = s3.getObject(bucketConfig.getBucketName(), file.getFullPath());
-                download(directorio, s3Object, file.getName());
-            } catch (AmazonClientException e) {
-                Growls.mostrarError("descargar.archivo", wrapAmazonException(e, "Descargar archivo"));
-            } finally {
-                ventana.setCursor(null);
-            }
+            File directorio = fc.getSelectedFile();
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    try {
+                        AmazonS3 s3 = getAmazonS3(bucketConfig);
+                        long size = getObjectSize(s3, bucketConfig.getBucketName(), file.getFullPath());
+                        if (isLargeFile(size)) {
+                            downloadWithTransferManager(bucketConfig, new GetObjectRequest(bucketConfig.getBucketName(), file.getFullPath()),
+                                    new File(directorio, file.getName()), "Descargar archivo");
+                        } else {
+                            S3Object s3Object = s3.getObject(bucketConfig.getBucketName(), file.getFullPath());
+                            download(directorio, s3Object, file.getName());
+                        }
+                    } catch (AmazonClientException e) {
+                        Growls.mostrarError("descargar.archivo", wrapAmazonException(e, "Descargar archivo"));
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    ventana.setCursor(null);
+                }
+            }.execute();
         }
     }
 
@@ -81,16 +111,34 @@ public class UtilidadesS3 {
         AmazonS3 s3 = getAmazonS3(configuracion.getBucketConfig());
         try {
             PutObjectRequest request = new PutObjectRequest(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), file);
+            if (isLargeFile(file.length())) {
+                Upload upload = getTransferManager(configuracion.getBucketConfig()).upload(request);
+                esperarTransfer(upload, "Subida", file.getName());
+                if (upload.getState() == com.amazonaws.services.s3.transfer.Transfer.TransferState.Completed) {
+                    aplicarPermisosLectura(s3, configuracion, fullpath, file.getName());
+                    return true;
+                }
+                return false;
+            }
+            progressHandler.onStart("Subida", file.getName());
             if (s3.putObject(request) != null) {
                 AccessControlList acl = s3.getObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName());
                 configuracion.getCannonicalIds().forEach(c ->
                         acl.grantPermission(new CanonicalGrantee(c.getId()), Permission.Read));
                 s3.setObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), acl);
+                progressHandler.onProgress(100, "Subida", file.getName());
+                progressHandler.onFinish(true, "Subida", file.getName());
                 return true;
             }
+            progressHandler.onFinish(false, "Subida", file.getName());
             return false;
         } catch (AmazonClientException e) {
+            progressHandler.onFinish(false, "Subida", file.getName());
             Logger.error("subir.archivo", wrapAmazonException(e, "Subir archivo"));
+            return false;
+        } catch (InterruptedException e) {
+            progressHandler.onFinish(false, "Subida", file.getName());
+            Logger.error("subir.archivo", e);
             return false;
         }
     }
@@ -146,21 +194,36 @@ public class UtilidadesS3 {
     }
 
     public static void getObject(MainUI ventana, BucketConfig bucketConfig, S3FileVersion fileVersion) {
-        JFileChooser fc = new JFileChooser();
-        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int retorno = fc.showSaveDialog(ventana);
+        JFileChooser fc = fileChooserProvider.createDirectoryChooser();
+        int retorno = fileChooserProvider.showSaveDialog(fc, ventana);
         if (retorno == JFileChooser.APPROVE_OPTION) {
             ventana.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            try {
-                File directorio = fc.getSelectedFile();
-                AmazonS3 s3 = getAmazonS3(bucketConfig);
-                S3Object s3Object = s3.getObject(new GetObjectRequest(bucketConfig.getBucketName(), fileVersion.getS3File().getFullPath(), fileVersion.getId()));
-                download(directorio, s3Object, getDownloadName(fileVersion));
-            } catch (AmazonClientException e) {
-                Growls.mostrarError("descargar.archivo", wrapAmazonException(e, "Descargar archivo"));
-            } finally {
-                ventana.setCursor(null);
-            }
+            File directorio = fc.getSelectedFile();
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    try {
+                        AmazonS3 s3 = getAmazonS3(bucketConfig);
+                        GetObjectRequest request = new GetObjectRequest(bucketConfig.getBucketName(), fileVersion.getS3File().getFullPath(), fileVersion.getId());
+                        long size = getObjectSize(s3, new GetObjectMetadataRequest(bucketConfig.getBucketName(),
+                                fileVersion.getS3File().getFullPath(), fileVersion.getId()));
+                        if (isLargeFile(size)) {
+                            downloadWithTransferManager(bucketConfig, request, new File(directorio, getDownloadName(fileVersion)), "Descargar versión");
+                        } else {
+                            S3Object s3Object = s3.getObject(request);
+                            download(directorio, s3Object, getDownloadName(fileVersion));
+                        }
+                    } catch (AmazonClientException e) {
+                        Growls.mostrarError("descargar.archivo", wrapAmazonException(e, "Descargar archivo"));
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    ventana.setCursor(null);
+                }
+            }.execute();
         }
     }
 
@@ -179,6 +242,10 @@ public class UtilidadesS3 {
 
     private static void download(File directorio, S3Object s3Object, String nombre) {
         byte[] buf = new byte[1024];
+        progressHandler.onStart("Descarga", nombre);
+        long total = s3Object.getObjectMetadata() != null ? s3Object.getObjectMetadata().getContentLength() : -1L;
+        long leidos = 0L;
+        int ultimoPorcentaje = -PROGRESS_STEP_PERCENT;
         try (InputStream in = s3Object.getObjectContent();
              OutputStream out = Files.newOutputStream(new File(directorio.getAbsolutePath() +
                      UtilidadesFichero.SEPARADOR + nombre).toPath())) {
@@ -188,13 +255,25 @@ public class UtilidadesS3 {
                     throw new InterruptedException();
                 }
                 out.write(buf, 0, count);
+                if (total > 0) {
+                    leidos += count;
+                    int porcentaje = (int) (leidos * 100 / total);
+                    if (porcentaje >= ultimoPorcentaje + PROGRESS_STEP_PERCENT) {
+                        ultimoPorcentaje = porcentaje;
+                        progressHandler.onProgress(porcentaje, "Descarga", nombre);
+                    }
+                }
             }
             in.close();
+            progressHandler.onProgress(100, "Descarga", nombre);
+            progressHandler.onFinish(true, "Descarga", nombre);
             Growls.mostrarInfo("archivo.descargado.correctamente");
         } catch (IOException e) {
             Growls.mostrarError("descargar.archivo", e);
+            progressHandler.onFinish(false, "Descarga", nombre);
         } catch (InterruptedException e) {
             Growls.mostrarError("descargar.archivo", e);
+            progressHandler.onFinish(false, "Descarga", nombre);
             Thread.currentThread().interrupt();
         }
     }
@@ -205,20 +284,41 @@ public class UtilidadesS3 {
         for (File file : files) {
             try {
                 PutObjectRequest request = new PutObjectRequest(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), file);
-                if (s3.putObject(request) != null) {
-                    AccessControlList acl = s3.getObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName());
-                    configuracion.getCannonicalIds().forEach(c ->
-                            acl.grantPermission(new CanonicalGrantee(c.getId()), Permission.Read));
-                    s3.setObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + file.getName(), acl);
+                if (isLargeFile(file.length())) {
+                    Upload upload = getTransferManager(configuracion.getBucketConfig()).upload(request);
+                    esperarTransfer(upload, "Subida", file.getName());
+                    if (upload.getState() == com.amazonaws.services.s3.transfer.Transfer.TransferState.Completed) {
+                        aplicarPermisosLectura(s3, configuracion, fullpath, file.getName());
+                    } else {
+                        errors.add(file);
+                    }
+                } else if (s3.putObject(request) != null) {
+                    progressHandler.onStart("Subida", file.getName());
+                    aplicarPermisosLectura(s3, configuracion, fullpath, file.getName());
+                    progressHandler.onProgress(100, "Subida", file.getName());
+                    progressHandler.onFinish(true, "Subida", file.getName());
                 } else {
                     errors.add(file);
+                    progressHandler.onFinish(false, "Subida", file.getName());
                 }
             } catch (AmazonClientException e) {
                 errors.add(file);
+                progressHandler.onFinish(false, "Subida", file.getName());
                 Logger.error("subir.archivo", wrapAmazonException(e, "Subir archivo"));
+            } catch (InterruptedException e) {
+                errors.add(file);
+                progressHandler.onFinish(false, "Subida", file.getName());
+                Logger.error("subir.archivo", e);
             }
         }
         return errors;
+    }
+
+    private static void aplicarPermisosLectura(AmazonS3 s3, Configuracion configuracion, String fullpath, String nombreArchivo) {
+        AccessControlList acl = s3.getObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + nombreArchivo);
+        configuracion.getCannonicalIds().forEach(c ->
+                acl.grantPermission(new CanonicalGrantee(c.getId()), Permission.Read));
+        s3.setObjectAcl(configuracion.getBucketConfig().getBucketName(), fullpath + nombreArchivo, acl);
     }
 
     private static Exception wrapAmazonException(Exception e, String contexto) {
@@ -248,6 +348,98 @@ public class UtilidadesS3 {
         return acumulado;
     }
 
+    private static TransferManager getTransferManager(BucketConfig bucketConfig) {
+        if (amazonS3Override != null) {
+            return TransferManagerBuilder.standard()
+                    .withS3Client(amazonS3Override)
+                    .withMultipartUploadThreshold(TRANSFER_MANAGER_MIN_SIZE)
+                    .build();
+        }
+        String cacheKey = getCacheKey(bucketConfig);
+        if (transferManagerCache != null && cacheKey.equals(transferManagerCacheKey)) {
+            return transferManagerCache;
+        }
+        TransferManager manager = TransferManagerBuilder.standard()
+                .withS3Client(getAmazonS3(bucketConfig))
+                .withMultipartUploadThreshold(TRANSFER_MANAGER_MIN_SIZE)
+                .build();
+        transferManagerCache = manager;
+        transferManagerCacheKey = cacheKey;
+        return manager;
+    }
+
+    private static String getCacheKey(BucketConfig bucketConfig) {
+        return String.join("|",
+                bucketConfig.getBucketName() == null ? "" : bucketConfig.getBucketName(),
+                bucketConfig.getAccesKey() == null ? "" : bucketConfig.getAccesKey(),
+                bucketConfig.getSecretKey() == null ? "" : bucketConfig.getSecretKey(),
+                bucketConfig.getRegion() == null ? "" : bucketConfig.getRegion().getName());
+    }
+
+    private static boolean isLargeFile(long size) {
+        return size >= TRANSFER_MANAGER_MIN_SIZE;
+    }
+
+    private static long getObjectSize(AmazonS3 s3, String bucket, String key) {
+        try {
+            ObjectMetadata metadata = s3.getObjectMetadata(bucket, key);
+            return metadata != null ? metadata.getContentLength() : -1L;
+        } catch (AmazonClientException e) {
+            Logger.error("descargar.archivo", wrapAmazonException(e, "Consultar metadata"));
+            return -1L;
+        }
+    }
+
+    private static long getObjectSize(AmazonS3 s3, GetObjectMetadataRequest request) {
+        try {
+            ObjectMetadata metadata = s3.getObjectMetadata(request);
+            return metadata != null ? metadata.getContentLength() : -1L;
+        } catch (AmazonClientException e) {
+            Logger.error("descargar.archivo", wrapAmazonException(e, "Consultar metadata"));
+            return -1L;
+        }
+    }
+
+    private static void downloadWithTransferManager(BucketConfig bucketConfig, GetObjectRequest request, File destino, String contexto) {
+        try {
+            Download download = getTransferManager(bucketConfig).download(request, destino);
+            esperarTransfer(download, "Descarga", destino.getName());
+            if (download.getState() == com.amazonaws.services.s3.transfer.Transfer.TransferState.Completed) {
+                Growls.mostrarInfo("archivo.descargado.correctamente");
+            }
+        } catch (InterruptedException e) {
+            Growls.mostrarError("descargar.archivo", e);
+            progressHandler.onFinish(false, "Descarga", destino.getName());
+            Thread.currentThread().interrupt();
+        } catch (AmazonClientException e) {
+            Growls.mostrarError("descargar.archivo", wrapAmazonException(e, contexto));
+            progressHandler.onFinish(false, "Descarga", destino.getName());
+        }
+    }
+
+    private static void esperarTransfer(Transfer transfer, String accion, String nombre) throws InterruptedException {
+        progressHandler.onStart(accion, nombre);
+        Logger.info(accion + " iniciada: " + nombre);
+        double ultimoPorcentaje = -PROGRESS_STEP_PERCENT;
+        while (!transfer.isDone()) {
+            double porcentaje = transfer.getProgress().getPercentTransferred();
+            if (porcentaje >= ultimoPorcentaje + PROGRESS_STEP_PERCENT) {
+                ultimoPorcentaje = porcentaje;
+                Logger.info(accion + " " + (int) porcentaje + "%: " + nombre);
+                progressHandler.onProgress((int) porcentaje, accion, nombre);
+            }
+            Thread.sleep(500);
+        }
+        transfer.waitForCompletion();
+        if (transfer.getState() == com.amazonaws.services.s3.transfer.Transfer.TransferState.Completed) {
+            Logger.info(accion + " completada: " + nombre);
+            progressHandler.onProgress(100, accion, nombre);
+            progressHandler.onFinish(true, accion, nombre);
+        } else {
+            progressHandler.onFinish(false, accion, nombre);
+        }
+    }
+
     public static PaginadorVersiones crearPaginadorVersiones(BucketConfig bucketConfig, S3File s3File, int maxKeys) {
         return new PaginadorVersiones(getAmazonS3(bucketConfig), bucketConfig.getBucketName(), s3File, maxKeys);
     }
@@ -267,12 +459,78 @@ public class UtilidadesS3 {
         return page;
     }
 
-    static void setAmazonS3ForTest(AmazonS3 amazonS3) {
+    public static void setAmazonS3ForTest(AmazonS3 amazonS3) {
         amazonS3Override = amazonS3;
+        amazonS3Cache = null;
+        amazonS3CacheKey = null;
+        transferManagerCache = null;
+        transferManagerCacheKey = null;
     }
 
-    static void clearAmazonS3ForTest() {
+    public static void clearAmazonS3ForTest() {
         amazonS3Override = null;
+        amazonS3Cache = null;
+        amazonS3CacheKey = null;
+        transferManagerCache = null;
+        transferManagerCacheKey = null;
+    }
+
+    static void setFileChooserProviderForTest(FileChooserProvider provider) {
+        fileChooserProvider = provider;
+    }
+
+    static void clearFileChooserProviderForTest() {
+        fileChooserProvider = new DefaultFileChooserProvider();
+    }
+
+    public static void setProgressHandler(ProgressHandler handler) {
+        progressHandler = handler != null ? handler : new DefaultProgressHandler();
+    }
+
+    static void clearProgressHandlerForTest() {
+        progressHandler = new DefaultProgressHandler();
+    }
+
+    interface FileChooserProvider {
+        JFileChooser createDirectoryChooser();
+
+        int showSaveDialog(JFileChooser chooser, Component parent);
+    }
+
+    public interface ProgressHandler {
+        void onStart(String accion, String nombre);
+
+        void onProgress(int porcentaje, String accion, String nombre);
+
+        void onFinish(boolean ok, String accion, String nombre);
+    }
+
+    private static class DefaultFileChooserProvider implements FileChooserProvider {
+        @Override
+        public JFileChooser createDirectoryChooser() {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            return chooser;
+        }
+
+        @Override
+        public int showSaveDialog(JFileChooser chooser, Component parent) {
+            return chooser.showSaveDialog(parent);
+        }
+    }
+
+    private static class DefaultProgressHandler implements ProgressHandler {
+        @Override
+        public void onStart(String accion, String nombre) {
+        }
+
+        @Override
+        public void onProgress(int porcentaje, String accion, String nombre) {
+        }
+
+        @Override
+        public void onFinish(boolean ok, String accion, String nombre) {
+        }
     }
 
     public static class PaginadorVersiones {
