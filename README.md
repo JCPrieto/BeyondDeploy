@@ -33,6 +33,12 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 
 ### Changelog ###
 
+* 0.12.0
+  * Barra de progreso para subidas/descargas con actualizaciones intermedias y ejecucion en background
+  * Reutilizacion de cliente S3 y TransferManager para ficheros grandes
+  * Actualizacion de dependencias (Jackson, JUnit, SonarQube) y Gradle Wrapper 9.3.0
+  * Tests unitarios ampliados para utilidades S3 y Explorador
+
 * 0.11.0
   * Requisito de Java actualizado a 21 y toolchain ajustada en Gradle
   * Paginación de versiones en S3 con carga bajo demanda en el menú contextual
