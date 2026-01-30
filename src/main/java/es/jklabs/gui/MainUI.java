@@ -86,7 +86,7 @@ public class MainUI extends JFrame {
         jmArchivo.add(jmiConfiguracion);
         jmArchivo.add(jmiExportar);
         jmArchivo.add(jmiImportar);
-        JMenu jmAyuda = new JMenu("Ayuda");
+        JMenu jmAyuda = new JMenu(Mensajes.getMensaje("ayuda"));
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/info.png"))));

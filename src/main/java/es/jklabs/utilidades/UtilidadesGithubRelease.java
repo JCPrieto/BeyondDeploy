@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,20 +45,11 @@ public class UtilidadesGithubRelease {
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File directorio = fc.getSelectedFile();
             try {
-                GitHubRelease release = obtenerUltimaRelease();
-                String version = obtenerVersion(release);
-                GitHubAsset asset = seleccionarAsset(release, version);
-                String urlDescarga = obtenerUrlDescarga(release, asset);
-                String nombreArchivo = obtenerNombreArchivo(asset, version);
-                if (urlDescarga == null || nombreArchivo == null) {
-                    Logger.info("No se pudo resolver la URL de descarga de la release");
-                    return;
+                boolean descargado = descargaNuevaVersion(directorio, UtilidadesGithubRelease::obtenerUltimaRelease,
+                        UtilidadesGithubRelease::abrirStreamDescarga);
+                if (descargado) {
+                    Growls.mostrarInfo("nueva.version.descargada");
                 }
-                Path destino = new File(directorio, nombreArchivo).toPath();
-                try (InputStream in = abrirStreamDescarga(urlDescarga)) {
-                    Files.copy(in, destino, StandardCopyOption.REPLACE_EXISTING);
-                }
-                Growls.mostrarInfo("nueva.version.descargada");
             } catch (AccessDeniedException e) {
                 Growls.mostrarError("path.sin.permiso.escritura", e);
                 descargaNuevaVersion(ventana);
@@ -68,19 +59,21 @@ public class UtilidadesGithubRelease {
         }
     }
 
-    static GitHubRelease parseReleaseJson(String json) throws IOException {
-        return MAPPER.readValue(json, GitHubRelease.class);
-    }
-
-    static String obtenerVersion(GitHubRelease release) {
-        if (release == null) {
-            return null;
+    static boolean descargaNuevaVersion(File directorio, ReleaseFetcher fetcher, StreamOpener opener) throws IOException {
+        GitHubRelease release = fetcher.fetch();
+        String version = obtenerVersion(release);
+        GitHubAsset asset = seleccionarAsset(release, version);
+        String urlDescarga = obtenerUrlDescarga(release, asset);
+        String nombreArchivo = obtenerNombreArchivo(asset, version);
+        if (urlDescarga == null || nombreArchivo == null) {
+            Logger.info(Mensajes.getError("url.release.no.resuelta"));
+            return false;
         }
-        String version = release.getTagName();
-        if (version == null || version.isEmpty()) {
-            version = release.getName();
+        Path destino = new File(directorio, nombreArchivo).toPath();
+        try (InputStream in = opener.open(urlDescarga)) {
+            Files.copy(in, destino, StandardCopyOption.REPLACE_EXISTING);
         }
-        return normalizarVersion(version);
+        return true;
     }
 
     static GitHubAsset seleccionarAsset(GitHubRelease release, String version) {
@@ -105,7 +98,55 @@ public class UtilidadesGithubRelease {
                 return asset;
             }
         }
-        return assets.get(0);
+        return assets.getFirst();
+    }
+
+    private static int parseVersionParte(String parte) {
+        StringBuilder digitos = new StringBuilder();
+        for (int i = 0; i < parte.length(); i++) {
+            char c = parte.charAt(i);
+            if (Character.isDigit(c)) {
+                digitos.append(c);
+            } else if (!digitos.isEmpty()) {
+                break;
+            }
+        }
+        if (digitos.isEmpty()) {
+            return 0;
+        }
+        return Integer.parseInt(digitos.toString());
+    }
+
+    static GitHubRelease parseReleaseJson(String json) throws IOException {
+        return MAPPER.readValue(json, GitHubRelease.class);
+    }
+
+    static String obtenerVersion(GitHubRelease release) {
+        if (release == null) {
+            return null;
+        }
+        String version = release.getTagName();
+        if (version == null || version.isEmpty()) {
+            version = release.getName();
+        }
+        return normalizarVersion(version);
+    }
+
+    private static GitHubRelease obtenerUltimaRelease() throws IOException {
+        URI uri = URI.create(API_URL);
+        HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Accept", "application/vnd.github+json");
+        conn.setRequestProperty("User-Agent", Constantes.NOMBRE_APP);
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(10000);
+        int status = conn.getResponseCode();
+        if (status < 200 || status >= 300) {
+            throw new IOException("Respuesta API GitHub: " + status + " " + conn.getResponseMessage());
+        }
+        try (InputStream in = conn.getInputStream()) {
+            return MAPPER.readValue(in, GitHubRelease.class);
+        }
     }
 
     static String obtenerUrlDescarga(GitHubRelease release, GitHubAsset asset) {
@@ -165,20 +206,17 @@ public class UtilidadesGithubRelease {
         return valores;
     }
 
-    private static int parseVersionParte(String parte) {
-        StringBuilder digitos = new StringBuilder();
-        for (int i = 0; i < parte.length(); i++) {
-            char c = parte.charAt(i);
-            if (Character.isDigit(c)) {
-                digitos.append(c);
-            } else if (digitos.length() > 0) {
-                break;
-            }
+    private static InputStream abrirStreamDescarga(String urlDescarga) throws IOException {
+        URI uri = URI.create(urlDescarga);
+        HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+        conn.setRequestProperty("User-Agent", Constantes.NOMBRE_APP);
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(10000);
+        int status = conn.getResponseCode();
+        if (status < 200 || status >= 300) {
+            throw new IOException("Respuesta descarga GitHub: " + status + " " + conn.getResponseMessage());
         }
-        if (digitos.length() == 0) {
-            return 0;
-        }
-        return Integer.parseInt(digitos.toString());
+        return conn.getInputStream();
     }
 
     private static String nombreArchivoPorVersion(String version) {
@@ -188,31 +226,11 @@ public class UtilidadesGithubRelease {
         return Constantes.NOMBRE_APP + "-" + version + ".zip";
     }
 
-    private static GitHubRelease obtenerUltimaRelease() throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(API_URL).openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Accept", "application/vnd.github+json");
-        conn.setRequestProperty("User-Agent", Constantes.NOMBRE_APP);
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(10000);
-        int status = conn.getResponseCode();
-        if (status < 200 || status >= 300) {
-            throw new IOException("Respuesta API GitHub: " + status + " " + conn.getResponseMessage());
-        }
-        try (InputStream in = conn.getInputStream()) {
-            return MAPPER.readValue(in, GitHubRelease.class);
-        }
+    interface ReleaseFetcher {
+        GitHubRelease fetch() throws IOException;
     }
 
-    private static InputStream abrirStreamDescarga(String urlDescarga) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(urlDescarga).openConnection();
-        conn.setRequestProperty("User-Agent", Constantes.NOMBRE_APP);
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(10000);
-        int status = conn.getResponseCode();
-        if (status < 200 || status >= 300) {
-            throw new IOException("Respuesta descarga GitHub: " + status + " " + conn.getResponseMessage());
-        }
-        return conn.getInputStream();
+    interface StreamOpener {
+        InputStream open(String urlDescarga) throws IOException;
     }
 }
