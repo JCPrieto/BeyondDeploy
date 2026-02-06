@@ -156,8 +156,17 @@ public class SecureStorageManager {
         if (promptShown) {
             return;
         }
+        // En tests/CI se inyecta la clave por propiedad del sistema; no debe degradarse a prompt UI.
+        if (provider != null && provider.getType() == ProviderType.SYSTEM_PROPERTY && provider.isAvailable()) {
+            return;
+        }
         resolveProviderFromConfig();
         if (hasOsProviderAvailable()) {
+            resolveProviderFromConfig();
+            return;
+        }
+        if (GraphicsEnvironment.isHeadless()) {
+            ensurePasswordEnabled();
             resolveProviderFromConfig();
             return;
         }
