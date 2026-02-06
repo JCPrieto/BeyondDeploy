@@ -16,6 +16,7 @@ import es.jklabs.utilidades.UtilidadesString;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -23,9 +24,10 @@ import java.util.ResourceBundle;
 
 public class ConfiguracionUI extends JDialog {
 
+    @Serial
     private static final long serialVersionUID = -3135251684578436628L;
     private static final String GUARDAR_CONFIGURACION = "guardar.configuracion";
-    private static ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
+    private static final ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
     private final MainUI padre;
     private Configuracion configuracion;
     private JTextField txBucketName;
@@ -236,7 +238,13 @@ public class ConfiguracionUI extends JDialog {
         if (configuracion != null && configuracion.getBucketConfig() != null) {
             txBucketName.setText(configuracion.getBucketConfig().getBucketName());
             txAccesKey.setText(configuracion.getBucketConfig().getAccesKey());
-            txSecretKey.setText(UtilidadesEncryptacion.decrypt(configuracion.getBucketConfig().getSecretKey()));
+            try {
+                txSecretKey.setText(UtilidadesEncryptacion.decrypt(configuracion.getBucketConfig().getSecretKey(),
+                        configuracion.getBucketConfig()::setSecretKey));
+            } catch (IllegalStateException e) {
+                Growls.mostrarError("secret.key.descifrado", e);
+                txSecretKey.setText("");
+            }
             cbRegion.setSelectedItem(configuracion.getBucketConfig().getRegion());
         }
     }

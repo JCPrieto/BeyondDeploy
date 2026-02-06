@@ -1,10 +1,33 @@
 package es.jklabs.utilidades;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
 
 import static org.junit.Assert.*;
 
 public class UtilidadesEncryptacionTest {
+
+    @Before
+    public void setup() throws Exception {
+        Path tempDir = Files.createTempDirectory("bd-secure");
+        System.setProperty("beyonddeploy.storage.dir", tempDir.toString());
+        byte[] key = new byte[32];
+        new java.security.SecureRandom().nextBytes(key);
+        System.setProperty("beyonddeploy.masterkey.b64", Base64.getEncoder().encodeToString(key));
+        SecureStorageManager.resetForTest();
+    }
+
+    @After
+    public void cleanup() {
+        SecureStorageManager.resetForTest();
+        System.clearProperty("beyonddeploy.storage.dir");
+        System.clearProperty("beyonddeploy.masterkey.b64");
+    }
 
     @Test
     public void encryptDecryptRoundtrip() {
@@ -30,8 +53,8 @@ public class UtilidadesEncryptacionTest {
     public void encryptConNullLanzaExcepcion() {
         try {
             UtilidadesEncryptacion.encrypt(null);
-            fail("Se esperaba IllegalStateException");
-        } catch (IllegalStateException expected) {
+            fail("Se esperaba IllegalArgumentException");
+        } catch (IllegalArgumentException expected) {
             // esperado
         }
     }

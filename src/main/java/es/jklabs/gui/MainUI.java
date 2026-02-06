@@ -2,6 +2,7 @@ package es.jklabs.gui;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import es.jklabs.gui.configuracion.ConfiguracionUI;
+import es.jklabs.gui.configuracion.SecureStorageUI;
 import es.jklabs.gui.dialogos.AcercaDe;
 import es.jklabs.gui.navegacion.Explorador;
 import es.jklabs.gui.utilidades.Growls;
@@ -83,9 +84,13 @@ public class MainUI extends JFrame {
         JMenuItem jmiImportar = new JMenuItem(Mensajes.getMensaje("importar.configuracion"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/upload.png"))));
         jmiImportar.addActionListener(al -> importarConfiguracion());
+        JMenuItem jmiAlmacenamientoSeguro = new JMenuItem(Mensajes.getMensaje("almacenamiento.seguro"), new ImageIcon(Objects
+                .requireNonNull(getClass().getClassLoader().getResource("img/icons/secure.png"))));
+        jmiAlmacenamientoSeguro.addActionListener(al -> abrirAlmacenamientoSeguro());
         jmArchivo.add(jmiConfiguracion);
         jmArchivo.add(jmiExportar);
         jmArchivo.add(jmiImportar);
+        jmArchivo.add(jmiAlmacenamientoSeguro);
         JMenu jmAyuda = new JMenu(Mensajes.getMensaje("ayuda"));
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"), new ImageIcon(Objects
@@ -173,6 +178,11 @@ public class MainUI extends JFrame {
     private void abrirConfiguracion() {
         ConfiguracionUI configuracionUI = new ConfiguracionUI(this, configuracion);
         configuracionUI.setVisible(true);
+    }
+
+    private void abrirAlmacenamientoSeguro() {
+        SecureStorageUI ui = new SecureStorageUI(this);
+        ui.setVisible(true);
     }
 
     public JPanel getPanelCentral() {
