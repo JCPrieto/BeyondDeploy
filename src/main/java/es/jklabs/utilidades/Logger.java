@@ -1,15 +1,16 @@
 package es.jklabs.utilidades;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
@@ -17,13 +18,20 @@ import java.util.logging.SimpleFormatter;
 public class Logger {
 
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(Logger.class.getName());
+    static final String LOG_DIR_PROPERTY = "beyonddeploy.log.dir";
     private static Logger logger;
-    private static final String ARCHIVO = "log_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
+    private static final int MAX_LOG_SIZE_BYTES = 2 * 1024 * 1024;
+    private static final int MAX_LOG_FILES_PER_DAY = 5;
+    private static final long MAX_LOG_AGE_MILLIS = 30L * 24 * 60 * 60 * 1000;
+    private static final String DATE = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    private static final String LOG_PREFIX = "log_" + DATE;
 
     private Logger() {
-        FileHandler fh;
         try {
-            fh = new FileHandler(ARCHIVO, true);
+            Path logDir = getLogDir();
+            Files.createDirectories(logDir);
+            String pattern = logDir.resolve(LOG_PREFIX + "_%g.log").toString();
+            FileHandler fh = new FileHandler(pattern, MAX_LOG_SIZE_BYTES, MAX_LOG_FILES_PER_DAY, true);
             LOG.addHandler(fh);
             LOG.setUseParentHandlers(false);
             SimpleFormatter formatter = new SimpleFormatter();
@@ -35,25 +43,85 @@ public class Logger {
     }
 
     public static void eliminarLogsVacios() {
-        File carpeta = new File(System.getProperty("user.dir"));
-        File[] lista = carpeta.listFiles();
-        if (lista != null) {
-            Arrays.stream(lista).filter(f -> f.isFile() && f.getName().endsWith(".log") && !StringUtils.equals
-                    (f.getName(), ARCHIVO)).forEach(Logger::eliminarLogsVacios);
+        try {
+            Path logDir = getLogDir();
+            Files.createDirectories(logDir);
+            long now = System.currentTimeMillis();
+            List<Path> logs = new ArrayList<>();
+            try (var stream = Files.list(logDir)) {
+                stream.filter(path -> Files.isRegularFile(path) && path.getFileName().toString().endsWith(".log"))
+                        .forEach(logs::add);
+            }
+            for (Path log : logs) {
+                try {
+                    long size = Files.size(log);
+                    if (size == 0L) {
+                        Files.deleteIfExists(log);
+                        continue;
+                    }
+                    FileTime lastModified = Files.getLastModifiedTime(log);
+                    if (now - lastModified.toMillis() > MAX_LOG_AGE_MILLIS) {
+                        Files.deleteIfExists(log);
+                    }
+                } catch (IOException e) {
+                    LOG.log(Level.SEVERE, Mensajes.getError("lectura.logs"), e);
+                }
+            }
+            cleanupOldDailyFiles();
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, Mensajes.getError("lectura.logs"), e);
         }
     }
 
-    private static void eliminarLogsVacios(File file) {
-        try (FileReader fr = new FileReader(file)) {
-            BufferedReader br = new BufferedReader(fr);
-            String linea = br.readLine();
-            if (linea == null) {
-                br.close();
-                Files.delete(file.toPath());
+    private static void cleanupOldDailyFiles() {
+        try (var stream = Files.list(getLogDir())) {
+            List<Path> todayLogs = stream
+                    .filter(path -> Files.isRegularFile(path)
+                            && path.getFileName().toString().startsWith(LOG_PREFIX)
+                            && path.getFileName().toString().endsWith(".log"))
+                    .sorted(Comparator.comparingLong(Logger::lastModifiedSafe).reversed())
+                    .toList();
+            if (todayLogs.size() <= MAX_LOG_FILES_PER_DAY) {
+                return;
+            }
+            for (int i = MAX_LOG_FILES_PER_DAY; i < todayLogs.size(); i++) {
+                Files.deleteIfExists(todayLogs.get(i));
             }
         } catch (IOException e) {
             LOG.log(Level.SEVERE, Mensajes.getError("lectura.logs"), e);
         }
+    }
+
+    private static long lastModifiedSafe(Path path) {
+        try {
+            return Files.getLastModifiedTime(path).toMillis();
+        } catch (IOException e) {
+            return 0L;
+        }
+    }
+
+    private static Path resolveLogDir() {
+        String override = System.getProperty(LOG_DIR_PROPERTY);
+        if (override != null && !override.isBlank()) {
+            return Paths.get(override);
+        }
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        String home = System.getProperty("user.home");
+        if (os.contains("win")) {
+            String localAppData = System.getenv("LOCALAPPDATA");
+            if (localAppData != null && !localAppData.isEmpty()) {
+                return Paths.get(localAppData, "BeyondDeploy", "logs");
+            }
+            return Paths.get(home, "AppData", "Local", "BeyondDeploy", "logs");
+        }
+        if (os.contains("mac")) {
+            return Paths.get(home, "Library", "Application Support", "BeyondDeploy", "logs");
+        }
+        return Paths.get(home, ".local", "share", "BeyondDeploy", "logs");
+    }
+
+    private static Path getLogDir() {
+        return resolveLogDir();
     }
 
     public static void init() {
