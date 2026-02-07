@@ -8,6 +8,8 @@
     - `i18n/` (`*.properties`) for user-facing strings.
     - `img/` icons used by the UI.
     - `json/` bundled JSON (treat as sensitive; see Security).
+- Runtime logs (outside repo): Linux `~/.local/share/BeyondDeploy/logs/`, macOS
+  `~/Library/Application Support/BeyondDeploy/logs/`, Windows `%LOCALAPPDATA%\\BeyondDeploy\\logs\\`.
 - Gradle build files: `build.gradle`, `settings.gradle`, wrapper in `gradle/` + `gradlew`.
 
 ## Build, Test, and Development Commands

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.13.1 - 2026-02-07
+
+- Logging reforzado: logs en rutas de datos por sistema operativo, rotacion por tamano y limpieza segura por
+  tamano/retencion.
+- Nuevos tests unitarios de `Logger` para validar eliminacion de logs vacios y antiguos.
+- Actualizacion de wrapper de Gradle a 9.3.1.
+- Actualizacion de `mockito-core` a 5.21.0.
+- Nuevo workflow de GitHub Actions para build y analisis SonarQube.
+- Actualizacion del plugin SonarQube en Gradle a 7.1.0.6387.
+
 ## 0.13.0 - 2026-02-06
 
 - Nuevo almacenamiento seguro de credenciales con proveedores nativos por sistema operativo (Windows Credential Manager,
