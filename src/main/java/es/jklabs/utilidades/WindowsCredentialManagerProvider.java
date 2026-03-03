@@ -2,6 +2,7 @@ package es.jklabs.utilidades;
 
 import com.sun.jna.*;
 import com.sun.jna.ptr.PointerByReference;
+import com.sun.jna.win32.W32APIOptions;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -11,6 +12,8 @@ class WindowsCredentialManagerProvider implements MasterKeyProvider {
 
     private static final int CREDENTIAL_TYPE_GENERIC = 1;
     private static final int CREDENTIAL_PERSIST_LOCAL_MACHINE = 2;
+    private static volatile boolean apiChecked;
+    private static volatile boolean apiAvailable;
     private final String targetName;
     private final String userName;
 
@@ -24,15 +27,41 @@ class WindowsCredentialManagerProvider implements MasterKeyProvider {
         return SecureStorageManager.ProviderType.WINDOWS_CREDENTIAL_MANAGER;
     }
 
+    private static boolean isCredentialApiAvailable() {
+        if (apiChecked) {
+            return apiAvailable;
+        }
+        synchronized (WindowsCredentialManagerProvider.class) {
+            if (apiChecked) {
+                return apiAvailable;
+            }
+            try {
+                NativeLibrary lib = NativeLibrary.getInstance("Advapi32");
+                lib.getFunction("CredReadW");
+                lib.getFunction("CredWriteW");
+                lib.getFunction("CredFree");
+                apiAvailable = true;
+            } catch (Throwable t) {
+                apiAvailable = false;
+                Logger.info("Windows Credential Manager no disponible: " + t.getMessage());
+            }
+            apiChecked = true;
+            return apiAvailable;
+        }
+    }
+
     @Override
     public boolean isAvailable() {
-        return CommandUtil.osName().startsWith("win");
+        return CommandUtil.osName().startsWith("win") && isCredentialApiAvailable();
     }
 
     @Override
     public byte[] loadKey() {
+        if (!isCredentialApiAvailable()) {
+            return null;
+        }
         PointerByReference pcred = new PointerByReference();
-        boolean ok = Advapi32Cred.INSTANCE.CredRead(new WString(targetName), CREDENTIAL_TYPE_GENERIC, 0, pcred);
+        boolean ok = Advapi32Cred.INSTANCE.CredReadW(new WString(targetName), CREDENTIAL_TYPE_GENERIC, 0, pcred);
         if (!ok) {
             return null;
         }
@@ -46,6 +75,9 @@ class WindowsCredentialManagerProvider implements MasterKeyProvider {
 
     @Override
     public void storeKey(byte[] key) {
+        if (!isCredentialApiAvailable()) {
+            return;
+        }
         String b64 = Base64.getEncoder().encodeToString(key);
         byte[] data = b64.getBytes(StandardCharsets.UTF_16LE);
         CREDENTIAL cred = new CREDENTIAL();
@@ -58,15 +90,15 @@ class WindowsCredentialManagerProvider implements MasterKeyProvider {
         cred.CredentialBlob = mem;
         cred.Persist = CREDENTIAL_PERSIST_LOCAL_MACHINE;
         cred.write();
-        Advapi32Cred.INSTANCE.CredWrite(cred, 0);
+        Advapi32Cred.INSTANCE.CredWriteW(cred, 0);
     }
 
     interface Advapi32Cred extends Library {
-        Advapi32Cred INSTANCE = Native.load("Advapi32", Advapi32Cred.class);
+        Advapi32Cred INSTANCE = Native.load("Advapi32", Advapi32Cred.class, W32APIOptions.UNICODE_OPTIONS);
 
-        boolean CredRead(WString targetName, int type, int flags, PointerByReference pcredential);
+        boolean CredReadW(WString targetName, int type, int flags, PointerByReference pcredential);
 
-        boolean CredWrite(CREDENTIAL credential, int flags);
+        boolean CredWriteW(CREDENTIAL credential, int flags);
 
         void CredFree(Pointer cred);
     }
