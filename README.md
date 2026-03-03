@@ -1,4 +1,6 @@
-# BeyondDeploy #
+# ![BeyondDeploy](src/main/resources/img/icons/s3-bucket.png) BeyondDeploy #
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=JCPrieto_BeyondDeploy&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=JCPrieto_BeyondDeploy)
 
 Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de un bucket de Amazon S3
 
