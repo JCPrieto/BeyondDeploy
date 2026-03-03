@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>beyonddeploy-BeyondDeploy.desktop</id>
+    <name>BeyondDeploy</name>
+    <summary>Gestión de ficheros y despliegues en Amazon S3</summary>
+    <description>
+        <p>Aplicación de escritorio para copiar, navegar y gestionar archivos dentro de buckets de Amazon S3.</p>
+    </description>
+    <developer_name>JKLabs</developer_name>
+    <project_license>GPL-3.0-or-later</project_license>
+    <metadata_license>CC0-1.0</metadata_license>
+    <launchable type="desktop-id">beyonddeploy-BeyondDeploy.desktop</launchable>
+    <icon type="stock">beyonddeploy</icon>
+    <url type="homepage">https://github.com/JCPrieto/BeyondDeploy</url>
+    <content_rating type="oars-1.1"/>
+</component>

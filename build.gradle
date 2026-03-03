@@ -5,7 +5,8 @@ plugins {
 }
 
 group 'es.jklabs.desktop'
-version '0.13.3'
+version = project.findProperty('appVersion') ?: '0.13.3'
+def appVersion = project.version.toString()
 
 java {
     toolchain {
@@ -31,7 +32,7 @@ distributions {
 
 processResources {
     filesMatching("app.properties") {
-        expand(version: project.version)
+        expand(version: appVersion)
     }
 }
 
@@ -50,6 +51,72 @@ dependencies {
     implementation 'org.slf4j:slf4j-simple:2.0.17'
     implementation 'net.java.dev.jna:jna:5.18.1'
     implementation 'net.java.dev.jna:jna-platform:5.18.1'
+}
+
+def installerType = project.findProperty('installerType') ?: 'deb'
+def installerIconProperty = (project.findProperty('installerIcon') ?: '').toString().trim()
+def installerIconFile = installerIconProperty ? file(installerIconProperty) : null
+def linuxResourceDir = file('src/main/resources/packaging/linux')
+def debMaintainer = 'Juan Carlos Prieto Silos <JuanC.Prieto.Silos@gmail.com>'
+def debMaintainerEmailMatcher = (debMaintainer =~ /<([^>]+)>/)
+def debMaintainerEmail = debMaintainerEmailMatcher.find() ? debMaintainerEmailMatcher.group(1) : debMaintainer
+def appVendor = 'Juan Carlos Prieto Silos'
+def appDescription = 'Aplicación de escritorio para gestionar despliegues y ficheros en Amazon S3'
+def appLicenseFile = file('LICENSE')
+def appAboutUrl = 'https://github.com/JCPrieto/BeyondDeploy'
+def jpackageInputDir = layout.buildDirectory.dir('jpackage/input')
+def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
+
+tasks.register('prepareJpackageInput', Copy) {
+    from configurations.runtimeClasspath
+    from tasks.named('jar')
+    from('src/main/resources/packaging/linux/beyonddeploy-BeyondDeploy.metainfo.xml')
+    into jpackageInputDir
+}
+
+tasks.register('jpackage', Exec) {
+    dependsOn tasks.named('prepareJpackageInput')
+
+    def javaHome = System.getProperty('java.home')
+    def jpackageBin = new File(javaHome, 'bin/jpackage').absolutePath
+    def mainJar = tasks.named('jar').get().archiveFileName.get()
+    def args = [
+            jpackageBin,
+            '--type', installerType,
+            '--name', 'BeyondDeploy',
+            '--app-version', appVersion,
+            '--input', jpackageInputDir.get().asFile.absolutePath,
+            '--main-jar', mainJar,
+            '--main-class', 'es.jklabs.BeyondDeploy',
+            '--description', appDescription,
+            '--about-url', appAboutUrl,
+            '--vendor', appVendor,
+            '--dest', jpackageOutputDir.get().asFile.absolutePath
+    ]
+
+    if (installerType != 'app-image' && appLicenseFile.exists()) {
+        args += ['--license-file', appLicenseFile.absolutePath]
+    }
+
+    if (installerIconFile != null && installerIconFile.exists()) {
+        args += ['--icon', installerIconFile.absolutePath]
+    }
+
+    if (installerType in ['deb', 'rpm']) {
+        args += [
+                '--linux-package-name', 'beyonddeploy',
+                '--linux-shortcut',
+                '--linux-menu-group', 'Development',
+                '--linux-app-category', 'Development',
+                '--resource-dir', linuxResourceDir.absolutePath,
+                '--java-options', '-Dsun.awt.X11.awtAppClassName=es-jklabs-BeyondDeploy'
+        ]
+        if (installerType == 'deb') {
+            args += ['--linux-deb-maintainer', debMaintainerEmail]
+        }
+    }
+
+    commandLine(args)
 }
 
 sonar {

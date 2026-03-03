@@ -1,46 +1,190 @@
-name: tests-and-release
+name: Release
 
 on:
   workflow_run:
     workflows:
       - SonarQube
+    branches:
+      - master
     types:
       - completed
 
-permissions:
-  contents: write
-
 jobs:
-  test-and-release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'master' }}
+  create-release:
+    permissions:
+      contents: write
+    if: >
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'master' &&
+        github.event.workflow_run.repository.full_name == github.repository &&
+        github.event.workflow_run.head_repository.full_name == github.repository &&
+        !github.event.workflow_run.head_repository.fork
+      }}
     runs-on: ubuntu-latest
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
     steps:
-      - name: Checkout
+      - name: Checkout branch
         uses: actions/checkout@v4
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+          fetch-depth: 1
 
-      - name: Setup Java
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
+          cache: gradle
 
-      - name: Run tests
-        run: ./gradlew test
-
-      - name: Build distribution
-        run: ./gradlew distZip
-
-      - name: Read version
+      - name: Resolve version
+        id: version
         run: |
-          echo "VERSION=$(./gradlew -q properties | awk '/^version: / {print $2}')" >> "$GITHUB_ENV"
+          APP_VERSION=$(./gradlew -q properties | awk '/^version:/ {print $2}')
+          if [ -z "$APP_VERSION" ]; then
+            echo "APP_VERSION not found from Gradle properties."
+            exit 1
+          fi
+          echo "app_version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag: v${{ env.VERSION }}
-          name: v${{ env.VERSION }}
-          generateReleaseNotes: true
-          skipIfReleaseExists: true
-          artifacts: build/distributions/*.zip
+          tag_name: v${{ steps.version.outputs.app_version }}
+          name: v${{ steps.version.outputs.app_version }}
+          generate_release_notes: true
+
+  package-installers:
+    permissions:
+      contents: write
+    needs: create-release
+    if: >
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'master' &&
+        github.event.workflow_run.repository.full_name == github.repository &&
+        github.event.workflow_run.head_repository.full_name == github.repository &&
+        !github.event.workflow_run.head_repository.fork
+      }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            linux_suffix: ubuntu22.04
+          - os: windows-latest
+          - os: macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Install Linux packaging dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot
+
+      - name: Set installer settings (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          echo "INSTALLER_TYPE=deb" >> "$GITHUB_ENV"
+          echo "INSTALLER_EXT=deb" >> "$GITHUB_ENV"
+          echo "ICON_PATH=src/main/resources/packaging/linux/beyonddeploy.png" >> "$GITHUB_ENV"
+
+      - name: Set installer settings (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          echo "INSTALLER_TYPE=dmg" >> "$GITHUB_ENV"
+          echo "INSTALLER_EXT=dmg" >> "$GITHUB_ENV"
+          echo "ICON_PATH=" >> "$GITHUB_ENV"
+
+      - name: Set installer settings (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          "INSTALLER_TYPE=msi" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "INSTALLER_EXT=msi" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "ICON_PATH=" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Build installer
+        run: ./gradlew -PappVersion="${{ needs.create-release.outputs.app_version }}" -PinstallerType="${{ env.INSTALLER_TYPE }}" -PinstallerIcon="${{ env.ICON_PATH }}" jpackage
+
+      - name: Rename Linux installer with distro suffix
+        id: linux_deb_metadata
+        if: runner.os == 'Linux'
+        run: |
+          DEB_FILE=$(ls -1 build/jpackage/*.deb | head -n 1)
+          if [ -z "$DEB_FILE" ]; then
+            echo "No .deb found in build/jpackage"
+            exit 1
+          fi
+          BASE_NAME=$(basename "$DEB_FILE" .deb)
+          RENAMED_FILE="build/jpackage/${BASE_NAME}_${{ matrix.linux_suffix }}.deb"
+          mv "$DEB_FILE" "$RENAMED_FILE"
+          echo "deb_filename=$(basename "$RENAMED_FILE")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload installer to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.create-release.outputs.app_version }}
+          files: build/jpackage/*.${{ env.INSTALLER_EXT }}
+          fail_on_unmatched_files: true
+
+      - name: Dispatch Ubuntu 22.04 .deb to APT repo updater
+        if: runner.os == 'Linux' && matrix.linux_suffix == 'ubuntu22.04'
+        uses: actions/github-script@v7
+        env:
+          APP_VERSION: ${{ needs.create-release.outputs.app_version }}
+          DEB_FILENAME: ${{ steps.linux_deb_metadata.outputs.deb_filename }}
+          DISTRO: ${{ matrix.linux_suffix }}
+          APT_REPO_OWNER: ${{ vars.APT_REPO_OWNER }}
+          APT_REPO_NAME: ${{ vars.APT_REPO_NAME }}
+        with:
+          github-token: ${{ secrets.APT_REPO_DISPATCH_TOKEN }}
+          script: |
+            const owner = process.env.APT_REPO_OWNER || 'JCPrieto';
+            const repo = process.env.APT_REPO_NAME || 'jklabs-apt-repo';
+            const appVersion = process.env.APP_VERSION;
+            const debFilename = process.env.DEB_FILENAME;
+            const distro = process.env.DISTRO;
+            if (!debFilename) {
+              core.setFailed('Missing DEB filename. The previous Linux packaging step did not produce metadata.');
+              return;
+            }
+
+            const releaseTag = `v${appVersion}`;
+            const debUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${releaseTag}/${debFilename}`;
+
+            await github.rest.repos.createDispatchEvent({
+              owner,
+              repo,
+              event_type: 'deb-published',
+              client_payload: {
+                source_repository: `${context.repo.owner}/${context.repo.repo}`,
+                package_name: 'beyonddeploy',
+                version: appVersion,
+                distro,
+                component: 'main',
+                architecture: 'amd64',
+                release_tag: releaseTag,
+                deb_filename: debFilename,
+                deb_url: debUrl
+              }
+            });

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=BeyondDeploy
+Comment=Gestor de ficheros y despliegues sobre Amazon S3
+Exec=/opt/beyonddeploy/bin/BeyondDeploy %u
+Icon=/opt/beyonddeploy/lib/beyonddeploy.png
+Terminal=false
+Type=Application
+Categories=Development;Utility;
+StartupWMClass=es-jklabs-BeyondDeploy
+StartupNotify=true

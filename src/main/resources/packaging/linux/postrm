@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+case "$1" in
+  remove)
+    rm -f /usr/bin/beyonddeploy || true
+  ;;
+  purge)
+    rm -f /usr/bin/beyonddeploy || true
+    rm -f /usr/share/applications/es-jklabs-BeyondDeploy.desktop || true
+    rm -f /usr/share/metainfo/beyonddeploy-BeyondDeploy.metainfo.xml || true
+    rm -f /usr/share/icons/hicolor/256x256/apps/beyonddeploy.png || true
+    command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q || true
+    command -v gtk-update-icon-cache >/dev/null 2>&1 && gtk-update-icon-cache -q /usr/share/icons/hicolor || true
+  ;;
+  upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    :
+  ;;
+esac
+exit 0
