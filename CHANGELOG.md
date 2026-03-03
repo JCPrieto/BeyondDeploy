@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.14.0 - 2026-03-03
+## 1.0.0 - 2026-03-03
 
 - Nuevo pipeline de release multiplataforma: generacion automatica de instaladores nativos `.deb` (Linux), `.msi` (
   Windows) y `.dmg` (macOS) desde GitHub Actions.
