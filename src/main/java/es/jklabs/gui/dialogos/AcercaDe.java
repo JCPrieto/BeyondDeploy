@@ -107,12 +107,12 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, yPosition++, "AWS Amazon S3", "https://aws.amazon.com/sdkforjava");
         addPowered(panel, cns, yPosition++, "Apache Commons Lang", "https://commons.apache.org/proper/commons-lang");
         addPowered(panel, cns, yPosition++, "Apache Commons IO", "https://commons.apache.org/proper/commons-io");
-        JLabel jLabelLicense = new JLabel
-                ("<html><i>Esta obra está bajo una licencia de Creative Commons " +
-                        "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>", new ImageIcon(Objects
-                        .requireNonNull(getClass().getClassLoader().getResource
-                                ("img/icons/creative_commons.png"))), SwingConstants.TRAILING);
-        jLabelLicense.addMouseListener(new UrlMouseListener(jLabelLicense, "https://creativecommons.org/licenses/by-nc-sa/4.0/"));
+        JLabel jLabelLicense = new JLabel(
+                mensajes.getString("licencia.app"),
+                new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource(
+                        "img/icons/gplv3-with-text-136x68.png"))),
+                SwingConstants.CENTER);
+        jLabelLicense.addMouseListener(new UrlMouseListener(jLabelLicense, mensajes.getString("licencia.app.url")));
         cns.insets = new Insets(10, 10, 10, 10);
         cns.gridx = 0;
         cns.gridy = yPosition++;
