@@ -37,4 +37,4 @@ jobs:
 
       - name: Sonar analyze
         if: ${{ env.SONAR_TOKEN != '' }}
-        run: ./gradlew sonar --info
+        run: ./gradlew jacocoTestReport sonar --info
