@@ -7,6 +7,7 @@
 - `src/main/resources/` — assets and configuration:
     - `i18n/` (`*.properties`) for user-facing strings.
     - `img/` icons used by the UI.
+  - `packaging/linux/` resources for `jpackage` Linux installers (`.desktop`, `metainfo`, maintainer scripts, icon).
     - `json/` bundled JSON (treat as sensitive; see Security).
 - Runtime logs (outside repo): Linux `~/.local/share/BeyondDeploy/logs/`, macOS
   `~/Library/Application Support/BeyondDeploy/logs/`, Windows `%LOCALAPPDATA%\\BeyondDeploy\\logs\\`.
@@ -18,6 +19,10 @@
 - `./gradlew run` — runs the app locally using `application.mainClass` (`es.jklabs.BeyondDeploy`).
 - `./gradlew test` — runs unit tests (JUnit 4). Add tests under `src/test/java/` as the project grows.
 - `./gradlew distZip` — builds a distributable ZIP (see `build/distributions/`).
+- `./gradlew -PinstallerType=deb -PinstallerIcon=src/main/resources/packaging/linux/beyonddeploy.png jpackage` — builds
+  Linux `.deb` installer in `build/jpackage/`.
+- `./gradlew -PinstallerType=msi jpackage` — builds Windows `.msi` installer (run on Windows runner/host).
+- `./gradlew -PinstallerType=dmg jpackage` — builds macOS `.dmg` installer (run on macOS runner/host).
 
 Note: the wrapper targets Gradle 9; use JDK 21+ to run Gradle tasks reliably.
 
@@ -42,3 +47,6 @@ Note: the wrapper targets Gradle 9; use JDK 21+ to run Gradle tasks reliably.
 
 - Do not commit credentials. If you must change `src/main/resources/json/*.json`, coordinate key rotation and document
   the impact in the PR.
+- For automated `.deb` publication to APT, configure `APT_REPO_DISPATCH_TOKEN` secret (repo dispatch permission on apt
+  repo)
+  and optional vars `APT_REPO_OWNER` / `APT_REPO_NAME`.

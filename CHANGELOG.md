@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.14.0 - 2026-03-03
+
+- Nuevo pipeline de release multiplataforma: generacion automatica de instaladores nativos `.deb` (Linux), `.msi` (
+  Windows) y `.dmg` (macOS) desde GitHub Actions.
+- Publicacion automatica del paquete `.deb` en el repositorio APT `jklabs-apt-repo` mediante `repository_dispatch`.
+- Nuevo soporte de empaquetado Linux con recursos de `jpackage` (`.desktop`, `metainfo`, scripts `postinst/prerm/postrm`
+  e icono dedicado).
+- Correccion del proveedor de credenciales en Windows para usar bindings Unicode (`CredReadW`/`CredWriteW`) y
+  verificacion defensiva de disponibilidad de API.
+- Actualizacion de dependencias: `jna`/`jna-platform` 5.18.1, `jackson-databind` 2.21.1, `mockito-core` 5.22.0 y plugin
+  `org.sonarqube` 7.2.2.6593.
+
 ## 0.13.1 - 2026-02-07
 
 - Logging reforzado: logs en rutas de datos por sistema operativo, rotacion por tamano y limpieza segura por
