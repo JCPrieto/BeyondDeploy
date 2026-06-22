@@ -1,20 +1,17 @@
 package es.jklabs.gui.utilidades;
 
+import com.sshtools.twoslices.*;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.Mensajes;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.util.Objects;
+import java.net.URL;
 
 public class Growls {
 
-    private static final String NOTIFY_SEND = "notify-send";
-    private static TrayIcon trayIcon;
+    private static final int TIMEOUT_SECONDS = 5;
 
-    private Growls(){
+    private Growls() {
 
     }
 
@@ -23,33 +20,13 @@ public class Growls {
     }
 
     private static void mostrarInfo(String titulo, String cuerpo) {
-        if (trayIcon != null) {
-            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getMensaje(cuerpo), TrayIcon.MessageType.INFO);
-        } else {
-            try {
-                Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
-                        titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                        Mensajes.getMensaje(cuerpo),
-                        "--icon=dialog-information"});
-            } catch (IOException e) {
-                Logger.error(e);
-            }
-        }
+        mostrarNotificacion(ToastType.INFO, titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
+                Mensajes.getMensaje(cuerpo));
     }
 
     public static void mostrarError(String titulo, String cuerpo, Exception e) {
-        if (trayIcon != null) {
-            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getError(cuerpo), TrayIcon.MessageType.ERROR);
-        } else {
-            try {
-                Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
-                        titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                        Mensajes.getError(cuerpo),
-                        "--icon=dialog-error"});
-            } catch (IOException e2) {
-                Logger.error(e2);
-            }
-        }
+        mostrarNotificacion(ToastType.ERROR, titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
+                Mensajes.getError(cuerpo));
         Logger.error(cuerpo, e);
     }
 
@@ -58,18 +35,8 @@ public class Growls {
     }
 
     public static void mostrarAviso(String titulo, String cuerpo, String[] params) {
-        if (trayIcon != null) {
-            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getError(cuerpo, params), TrayIcon.MessageType.WARNING);
-        } else {
-            try {
-                Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
-                        titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                        Mensajes.getError(cuerpo, params),
-                        "--icon=dialog-warning"});
-            } catch (IOException e) {
-                Logger.error(e);
-            }
-        }
+        mostrarNotificacion(ToastType.WARNING, titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
+                Mensajes.getError(cuerpo, params));
     }
 
     public static void mostrarInfo(String cuerpo) {
@@ -77,17 +44,26 @@ public class Growls {
     }
 
     public static void init() {
-        trayIcon = null;
-        if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
-            SystemTray tray = SystemTray.getSystemTray();
-            trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(Growls.class.getClassLoader().getResource
-                    ("img/icons/s3-bucket.png"))).getImage(), Constantes.NOMBRE_APP);
-            trayIcon.setImageAutoSize(true);
-            try {
-                tray.add(trayIcon);
-            } catch (AWTException e) {
-                Logger.error("establecer.icono.systray", e);
-            }
+        URL icon = Growls.class.getClassLoader().getResource("img/icons/s3-bucket.png");
+        ToasterSettings settings = new ToasterSettings()
+                .setAppName(Constantes.NOMBRE_APP)
+                .setTimeout(TIMEOUT_SECONDS);
+        if (icon != null) {
+            settings.setDefaultImage(icon);
+        }
+        ToasterFactory.setSettings(settings);
+    }
+
+    private static void mostrarNotificacion(ToastType tipo, String titulo, String cuerpo) {
+        try {
+            Toast.builder()
+                    .type(tipo)
+                    .title(titulo)
+                    .content(cuerpo)
+                    .timeout(TIMEOUT_SECONDS)
+                    .toast();
+        } catch (ToasterException | IllegalStateException e) {
+            Logger.error("mostrar.notificacion", e);
         }
     }
 }

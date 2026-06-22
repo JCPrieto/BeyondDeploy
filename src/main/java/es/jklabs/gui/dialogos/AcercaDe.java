@@ -109,6 +109,7 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, yPosition++, "AWS Amazon S3", "https://aws.amazon.com/sdkforjava");
         addPowered(panel, cns, yPosition++, "Apache Commons Lang", "https://commons.apache.org/proper/commons-lang");
         addPowered(panel, cns, yPosition++, "Apache Commons IO", "https://commons.apache.org/proper/commons-io");
+        addPowered(panel, cns, yPosition++, "two-slices", "https://github.com/sshtools/two-slices");
         JLabel jLabelLicense = new JLabel(
                 mensajes.getString("licencia.app"),
                 new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource(

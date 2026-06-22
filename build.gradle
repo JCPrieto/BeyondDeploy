@@ -53,6 +53,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-simple:2.0.17'
     implementation 'net.java.dev.jna:jna:5.18.1'
     implementation 'net.java.dev.jna:jna-platform:5.18.1'
+    implementation 'com.sshtools:two-slices:0.9.6'
 }
 
 def installerType = project.findProperty('installerType') ?: 'deb'

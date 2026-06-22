@@ -26,6 +26,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
     * AWS Amazon S3 https://aws.amazon.com/sdkforjava
     * Apache Commons Lang http://commons.apache.org/proper/commons-lang
     * Apache Commons IO http://commons.apache.org/proper/commons-io
+    * two-slices https://github.com/sshtools/two-slices
     
 ### ToDo ###
 
