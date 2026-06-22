@@ -58,6 +58,7 @@ public class UtilidadesEncryptacion {
         throw new IllegalStateException("Error al desencriptar dato");
     }
 
+    @SuppressWarnings("java:S5542")
     private static String legacyDecrypt(String encrypted) {
         String keyB64 = System.getenv(LEGACY_KEY_ENV);
         String ivB64 = System.getenv(LEGACY_IV_ENV);
@@ -72,6 +73,7 @@ public class UtilidadesEncryptacion {
         try {
             IvParameterSpec ivSpec = new IvParameterSpec(iv);
             SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+            // Necesario para descifrar secretos legacy y migrarlos a SecureStorageManager (AES/GCM/NoPadding).
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
             byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypted));
