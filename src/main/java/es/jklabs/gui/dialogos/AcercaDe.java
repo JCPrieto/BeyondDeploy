@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
@@ -19,6 +20,7 @@ import java.util.ResourceBundle;
 
 public class AcercaDe extends JDialog {
 
+    @Serial
     private static final long serialVersionUID = -3603153746836186743L;
     private static final ResourceBundle mensajes = ResourceBundle.getBundle("i18n/mensajes", Locale.getDefault());
 
@@ -130,7 +132,7 @@ public class AcercaDe extends JDialog {
         this.dispose();
     }
 
-    private void addPowered(JPanel panel, GridBagConstraints cns, int y, String titulo, String url) {
+    static void addPowered(JPanel panel, GridBagConstraints cns, int y, String titulo, String url) {
         JLabel jLabelTitulo = new JLabel("<html><b>" + titulo + "</b></html>", SwingConstants.LEFT);
         if (url != null) {
             jLabelTitulo.addMouseListener(new UrlMouseListener(jLabelTitulo, url));
