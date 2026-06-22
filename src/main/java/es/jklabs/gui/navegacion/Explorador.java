@@ -1,6 +1,5 @@
 package es.jklabs.gui.navegacion;
 
-import com.amazonaws.services.s3.model.ObjectListing;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.layout.WrapLayout;
@@ -13,6 +12,7 @@ import es.jklabs.s3.model.S3Folder;
 import es.jklabs.utilidades.UtilidadesS3;
 import es.jklabs.utilidades.UtilsCache;
 import org.apache.commons.lang3.StringUtils;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 
 import javax.swing.*;
 import java.awt.*;
@@ -120,7 +120,7 @@ public class Explorador extends JPanel {
         folder.getS3Forlders().clear();
         folder.getS3Files().clear();
         try {
-            ObjectListing elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), folder
+            ListObjectsV2Response elementos = UtilidadesS3.getObjetos(padre.getConfiguracion().getBucketConfig(), folder
                     .getFullpath());
             UtilidadesS3.actualizarCarpeta(folder, elementos);
             cargarPanelCentral();

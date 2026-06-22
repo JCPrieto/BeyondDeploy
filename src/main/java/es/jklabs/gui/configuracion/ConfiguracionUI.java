@@ -1,6 +1,5 @@
 package es.jklabs.gui.configuracion;
 
-import com.amazonaws.regions.Regions;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.UtilidadesImagenes;
@@ -12,6 +11,7 @@ import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesEncryptacion;
 import es.jklabs.utilidades.UtilidadesString;
+import software.amazon.awssdk.regions.Region;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -35,7 +35,7 @@ public class ConfiguracionUI extends JDialog {
     private JPasswordField txSecretKey;
     private JTable tbCannonicalId;
     private CannonicalTableModel tmCannonicalId;
-    private JComboBox<Regions> cbRegion;
+    private JComboBox<Region> cbRegion;
 
     public ConfiguracionUI(MainUI mainUI, Configuracion configuracion) {
         super(mainUI, mensajes.getString("configuracion"), true);
@@ -226,7 +226,7 @@ public class ConfiguracionUI extends JDialog {
         c.gridx = 0;
         c.gridy = 6;
         panel.add(lbRegion, c);
-        cbRegion = new JComboBox<>(Regions.values());
+        cbRegion = new JComboBox<>(Region.regions().toArray(new Region[0]));
         c.gridx = 1;
         c.gridy = 6;
         panel.add(cbRegion, c);

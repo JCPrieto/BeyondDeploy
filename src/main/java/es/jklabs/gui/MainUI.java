@@ -1,6 +1,5 @@
 package es.jklabs.gui;
 
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import es.jklabs.gui.configuracion.ConfiguracionUI;
 import es.jklabs.gui.configuracion.SecureStorageUI;
 import es.jklabs.gui.dialogos.AcercaDe;
@@ -11,6 +10,7 @@ import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.s3.model.S3Folder;
 import es.jklabs.utilidades.*;
 import org.apache.commons.io.FilenameUtils;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,7 +58,7 @@ public class MainUI extends JFrame {
         try {
             raiz = new S3Folder();
             panelCentral = new Explorador(this, raiz);
-        } catch (AmazonS3Exception e) {
+        } catch (S3Exception e) {
             Growls.mostrarError("configura.bucket.incorrecta", e);
             panelCentral = new JPanel();
         }
