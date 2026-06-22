@@ -215,18 +215,6 @@ public class MainUI extends JFrame {
         return panelEstado;
     }
 
-    private void actualizarProgresoFin(boolean ok, String accion, String nombre) {
-        SwingUtilities.invokeLater(() -> {
-            if (progressBar == null) {
-                return;
-            }
-            progressBar.setIndeterminate(false);
-            progressBar.setValue(ok ? 100 : 0);
-            progressBar.setString(accion + (ok ? " completada: " : " fallida: ") + nombre);
-            programarOcultado();
-        });
-    }
-
     private void detenerOcultado() {
         if (progressHideTimer != null && progressHideTimer.isRunning()) {
             progressHideTimer.stop();
@@ -286,6 +274,18 @@ public class MainUI extends JFrame {
         @Override
         public void onFinish(boolean ok, String accion, String nombre) {
             actualizarProgresoFin(ok, accion, nombre);
+        }
+
+        private void actualizarProgresoFin(boolean ok, String accion, String nombre) {
+            SwingUtilities.invokeLater(() -> {
+                if (progressBar == null) {
+                    return;
+                }
+                progressBar.setIndeterminate(false);
+                progressBar.setValue(ok ? 100 : 0);
+                progressBar.setString(accion + (ok ? " completada: " : " fallida: ") + nombre);
+                programarOcultado();
+            });
         }
     }
 }
