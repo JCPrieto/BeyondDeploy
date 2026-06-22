@@ -45,6 +45,7 @@ public class BeyondDeploy {
                         }
                     } catch (Exception e) {
                         Logger.error("Cargar configuracion", e);
+                        Thread.currentThread().interrupt();
                     }
                 }
             }.execute();
