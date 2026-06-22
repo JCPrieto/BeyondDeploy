@@ -215,19 +215,6 @@ public class MainUI extends JFrame {
         return panelEstado;
     }
 
-    private void actualizarProgreso(int porcentaje, String accion, String nombre) {
-        SwingUtilities.invokeLater(() -> {
-            if (progressBar == null) {
-                return;
-            }
-            detenerOcultado();
-            progressBar.setIndeterminate(false);
-            progressBar.setValue(porcentaje);
-            progressBar.setString(accion + " " + porcentaje + "%: " + nombre);
-            progressBar.setVisible(true);
-        });
-    }
-
     private void actualizarProgresoFin(boolean ok, String accion, String nombre) {
         SwingUtilities.invokeLater(() -> {
             if (progressBar == null) {
@@ -281,6 +268,19 @@ public class MainUI extends JFrame {
         @Override
         public void onProgress(int porcentaje, String accion, String nombre) {
             actualizarProgreso(porcentaje, accion, nombre);
+        }
+
+        private void actualizarProgreso(int porcentaje, String accion, String nombre) {
+            SwingUtilities.invokeLater(() -> {
+                if (progressBar == null) {
+                    return;
+                }
+                detenerOcultado();
+                progressBar.setIndeterminate(false);
+                progressBar.setValue(porcentaje);
+                progressBar.setString(accion + " " + porcentaje + "%: " + nombre);
+                progressBar.setVisible(true);
+            });
         }
 
         @Override
