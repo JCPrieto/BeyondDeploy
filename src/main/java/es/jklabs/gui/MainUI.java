@@ -114,7 +114,7 @@ public class MainUI extends JFrame {
             @Override
             protected void done() {
                 try {
-                    if (get()) {
+                    if (Objects.equals(get(), Boolean.TRUE)) {
                         menu.add(Box.createHorizontalGlue());
                         JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"), new ImageIcon
                                 (Objects.requireNonNull(getClass().getClassLoader().getResource("img/icons/update.png"))));
