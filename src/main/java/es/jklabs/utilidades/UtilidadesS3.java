@@ -64,7 +64,7 @@ public class UtilidadesS3 {
             Growls.mostrarError("secret.key.descifrado", e);
             throw new AmazonClientException("Error al descifrar Secret Key", e);
         }
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials(bucketConfig.getAccesKey(), secretKey);
+        BasicAWSCredentials awsCreds = crearCredencialesConfiguradasPorUsuario(bucketConfig, secretKey);
         AmazonS3 s3 = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .withRegion(bucketConfig.getRegion())
@@ -72,6 +72,13 @@ public class UtilidadesS3 {
         amazonS3Cache = s3;
         amazonS3CacheKey = cacheKey;
         return s3;
+    }
+
+    @SuppressWarnings("java:S6240")
+    private static BasicAWSCredentials crearCredencialesConfiguradasPorUsuario(BucketConfig bucketConfig,
+                                                                               String secretKey) {
+        // Credenciales configuradas por el usuario: la secret key se guarda cifrada y no hay claves hardcodeadas.
+        return new BasicAWSCredentials(bucketConfig.getAccesKey(), secretKey); // NOSONAR
     }
 
     public static void getObject(MainUI ventana, BucketConfig bucketConfig, S3File file) {
