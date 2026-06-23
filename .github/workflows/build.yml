@@ -41,4 +41,9 @@ jobs:
             echo "SONAR_TOKEN is not available. Skipping SonarQube analysis."
             exit 0
           fi
+          if ! curl --fail --silent --show-error --user "${SONAR_TOKEN}:" \
+              "https://sonarcloud.io/api/authentication/validate" | grep -q '"valid":true'; then
+            echo "SONAR_TOKEN is available, but SonarCloud rejected it. Regenerate the token and update the repository secret."
+            exit 1
+          fi
           ./gradlew --no-daemon jacocoTestReport sonar --info -Dsonar.token="${SONAR_TOKEN}"
