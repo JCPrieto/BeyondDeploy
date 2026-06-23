@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 - 2026-06-23
+
+- Migracion de la integracion con Amazon S3 al AWS SDK for Java 2.x, incluyendo clientes `S3Client`/`S3AsyncClient`,
+  modelos de region del SDK v2 y manejo de excepciones actualizado.
+- Recuperacion de la barra de progreso en subidas mediante `S3TransferManager` y listeners de transferencia del SDK v2.
+- Sustitucion del sistema de notificaciones basado en `SystemTray`/`notify-send` por `two-slices`, eliminando el
+  requisito directo de LibNotify en Linux.
+- Compatibilidad de configuraciones existentes con regiones legacy del SDK v1 (`EU_WEST_1`, etc.) normalizandolas al
+  formato de region del SDK v2.
+- Ampliacion de tests unitarios para S3, flujo de subidas en `Explorador` y el dialogo "Acerca de"; tambien se acotan
+  hotspots Sonar en cifrado legacy y credenciales configuradas por usuario.
+
 ## 1.0.0 - 2026-03-03
 
 - Nuevo pipeline de release multiplataforma: generacion automatica de instaladores nativos `.deb` (Linux), `.msi` (

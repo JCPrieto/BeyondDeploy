@@ -31,6 +31,10 @@ Note: the wrapper targets Gradle 9; use JDK 21+ to run Gradle tasks reliably.
 - Java: 4-space indentation, braces on the same line, keep methods small and focused.
 - Packages follow `es.jklabs.*`; keep new code in the closest existing package (UI vs. utilities vs. models).
 - Resources: add new i18n keys to `src/main/resources/i18n/mensajes.properties` (and errors to `errores.properties`).
+- S3 integration uses AWS SDK for Java 2.x (`software.amazon.awssdk.*`) and `S3TransferManager`; do not add new AWS SDK
+  v1 (`com.amazonaws.*`) usage.
+- Desktop notifications are centralized in `es.jklabs.gui.utilidades.Growls` via `two-slices`; do not call
+  `SystemTray`, `TrayIcon`, or `notify-send` directly.
 
 ## Testing Guidelines
 

@@ -12,7 +12,6 @@ import javax.swing.*;
 public class BeyondDeploy {
 
     public static void main(String[] args) {
-        System.setProperty("aws.java.v1.disableDeprecationAnnouncement", "true");
         Logger.eliminarLogsVacios();
         Logger.init();
         SwingUtilities.invokeLater(() -> {

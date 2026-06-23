@@ -7,7 +7,6 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 ### Requisitos ###
 
 * Java 21
-* LibNotify (Para las notificaciones en Linux)
 
 ### Ejecución ###
 
@@ -23,7 +22,7 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 * Librerias:
     * Jackson https://github.com/FasterXML/jackson-core/wiki
   * GitHub Releases https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
-    * AWS Amazon S3 https://aws.amazon.com/sdkforjava
+  * AWS SDK for Java 2.x (S3 y S3 Transfer Manager) https://aws.amazon.com/sdkforjava
     * Apache Commons Lang http://commons.apache.org/proper/commons-lang
     * Apache Commons IO http://commons.apache.org/proper/commons-io
     * two-slices https://github.com/sshtools/two-slices
@@ -31,7 +30,6 @@ Aplicación de uso interno de la empresa BeBeyond para copiar archivos dentro de
 ### ToDo ###
 
 * Actualizar librería xml.bind
-* Notificaciones en KDE
 * Integración con EC2 para crear, parar o reiniciar maquinas, así como ejecutar sentencias de comando via SSH.
 
 ### Changelog ###
